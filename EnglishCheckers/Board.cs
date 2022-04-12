@@ -15,7 +15,7 @@ namespace EnglishCheckers
         private void setInitialBoard()
         {
             /// for each square will set row+col 
-            /// for each square will set coin to red/black/leave it null + put it in the players list
+            /// for each square will set coin to red/black/leave it null + put it in the players
             /// 
         }
     }
