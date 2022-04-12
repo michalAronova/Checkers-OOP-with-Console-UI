@@ -1,9 +1,22 @@
-﻿namespace EnglishCheckers
+﻿using System.Collections.Generic;
+
+namespace EnglishCheckers
 {
     public class Board
     {
-        // A matrix of what? Not all places will have a coin?
-        private int m_Height;
-        private int m_Width;
+        private Square[,] m_GameBoard;
+
+        public Board(int i_BoardSize)
+        {
+            m_GameBoard = new Square[i_BoardSize, i_BoardSize];
+            setInitialBoard();
+        }
+
+        private void setInitialBoard()
+        {
+            /// for each square will set row+col 
+            /// for each square will set coin to red/black/leave it null + put it in the players list
+            /// 
+        }
     }
 }

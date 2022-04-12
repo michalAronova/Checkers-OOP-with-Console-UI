@@ -1,10 +1,10 @@
 ﻿namespace EnglishCheckers
 {
-    public class Coordinate
+    public class Square
     {
         private int m_Row;
         private int m_Column;
-
+        private Coin m_Coin = null;
         public int Row
         {
             get

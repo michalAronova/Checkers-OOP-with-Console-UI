@@ -34,10 +34,14 @@
   <ItemGroup>
     <Compile Include="Board.cs" />
     <Compile Include="Coin.cs" />
-    <Compile Include="Coordinate.cs" />
+    <Compile Include="Square.cs" />
     <Compile Include="GameManager.cs" />
     <Compile Include="Player.cs" />
     <Compile Include="Program.cs" />
+    <Compile Include="UserInterface.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
