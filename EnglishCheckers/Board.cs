@@ -18,5 +18,23 @@ namespace EnglishCheckers
             /// for each square will set coin to red/black/leave it null + put it in the players
             /// 
         }
+
+        public int Size
+        {
+            get
+            {
+                return m_GameBoard.GetLength(0);
+            }
+        }
+
+        public Square GetSquare(int i_Row, int i_Col)
+        {
+            return m_GameBoard[i_Row, i_Col];
+        }
+
+        public void SetSquare(int i_Row, int i_Col, Coin i_Coin)
+        {
+            m_GameBoard[i_Row, i_Col].Coin = i_Coin;
+        }
     }
 }

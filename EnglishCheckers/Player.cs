@@ -18,9 +18,10 @@ namespace EnglishCheckers
                 m_IsHumanPlayer = value;
             }
         }
-        private void Move(Square i_SourceSquare, Square i_DestinationSquare)
+        public void Move(Square i_SourceSquare, Square i_DestinationSquare) //makes legal move
         {
-
+            i_DestinationSquare.Coin = i_SourceSquare.Coin;
+            i_SourceSquare.Coin = null;
         }
     }
 }

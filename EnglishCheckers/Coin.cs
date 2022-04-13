@@ -9,6 +9,7 @@ namespace EnglishCheckers
             Red,
             Black,
         }
+
         private eCoinType m_CoinType; //default?
         private bool m_IsKing = false;
         

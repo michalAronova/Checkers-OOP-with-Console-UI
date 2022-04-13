@@ -2,30 +2,18 @@
 {
     public class Square
     {
-        private int m_Row;
-        private int m_Column;
+        private Coordinate m_Coordinate;
         private Coin m_Coin = null;
-        public int Row
-        {
-            get
-            {
-                return m_Row;
-            }
-            set
-            {
-                m_Row = value;
-            }
-        }
 
-        public int Column
+        public Coin Coin
         {
             get
             {
-                return m_Column;
+                return m_Coin;
             }
             set
             {
-                m_Column = value;
+                m_Coin = value;
             }
         }
     }
