@@ -22,11 +22,11 @@ namespace EnglishCheckers
             {
                 if(i < numberOfInitialPlayerRows)
                 {
-                    setupRow(i, Coin.eCoinType.Player2Coin);
+                    setupRow(i, Coin.eCoinType.Player1Coin);
                 }
                 else if(i >= m_BoardSize - numberOfInitialPlayerRows)
                 {
-                    setupRow(i, Coin.eCoinType.Player1Coin);
+                    setupRow(i, Coin.eCoinType.Player2Coin);
                 }
                 else
                 {
@@ -66,7 +66,7 @@ namespace EnglishCheckers
         {
             get
             {
-                return m_GameBoard.GetLength(0);
+                return m_BoardSize;
             }
         }
 
