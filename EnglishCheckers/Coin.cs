@@ -1,4 +1,5 @@
 ﻿using System.Security.Cryptography;
+using System.Security.Policy;
 
 namespace EnglishCheckers
 {
@@ -12,7 +13,6 @@ namespace EnglishCheckers
 
         private eCoinType m_CoinType; //default?
         private bool m_IsKing = false;
-
         public Coin(eCoinType i_CoinType)
         {
             m_CoinType = i_CoinType;

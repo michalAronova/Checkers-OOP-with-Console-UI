@@ -1,4 +1,6 @@
-﻿namespace EnglishCheckers
+﻿using System;
+
+namespace EnglishCheckers
 {
     public class GameManager
     {
@@ -53,7 +55,7 @@
 
         public eGameStatus InitiateComputerMove()
         {
-
+            
         }
     }
 }
