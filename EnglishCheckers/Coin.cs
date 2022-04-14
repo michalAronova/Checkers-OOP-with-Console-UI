@@ -12,16 +12,16 @@ namespace EnglishCheckers
 
         private eCoinType m_CoinType; //default?
         private bool m_IsKing = false;
-        
+
+        public Coin(eCoinType i_CoinType)
+        {
+            m_CoinType = i_CoinType;
+        }
         public eCoinType Type
         {
             get
             {
                 return m_CoinType;
-            }
-            set
-            {
-                m_CoinType = value;
             }
         }
         public bool IsKing
