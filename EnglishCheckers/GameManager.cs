@@ -5,8 +5,8 @@ namespace EnglishCheckers
     public class GameManager
     {
         private Board m_Board = null;
-        private Player m_Player1 = new Player();
-        private Player m_Player2 = new Player();
+        private Player m_Player1 = new Player(Player.eDirection.Down);
+        private Player m_Player2 = new Player(Player.eDirection.Up);
         private bool m_Player1sTurn = true;
         public enum eGameStatus
         {
