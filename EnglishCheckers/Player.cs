@@ -5,7 +5,18 @@ namespace EnglishCheckers
     public class Player
     {
         private bool m_IsHumanPlayer = true;
-        private LinkedList<Coin> m_PlayersCoins;
+        private Dictionary<Coordinate, Coin> m_PlayersCoins;
+        private int m_PlayerPoints = 0;
+        private readonly eDirection r_Direction;
+        public enum eDirection
+        {
+            Up,
+            Down,
+        }
+        public Player(eDirection i_Direction)
+        {
+            r_Direction = i_Direction;
+        }
 
         public bool IsHumanPlayer
         {
@@ -22,6 +33,8 @@ namespace EnglishCheckers
         {
             i_DestinationSquare.Coin = i_SourceSquare.Coin;
             i_SourceSquare.Coin = null;
+            m_PlayersCoins.Remove(i_SourceSquare.Coordinate);
+            m_PlayersCoins.Add(i_DestinationSquare.Coordinate, i_DestinationSquare.Coin);
         }
     }
 }

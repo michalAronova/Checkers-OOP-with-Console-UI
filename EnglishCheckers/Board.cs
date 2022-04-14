@@ -17,15 +17,16 @@ namespace EnglishCheckers
         private void setInitialBoard()
         {
             int numberOfInitialPlayerRows = (m_BoardSize / 2 - 1);
+
             for(int i = 0; i < m_BoardSize; i++)
             {
                 if(i < numberOfInitialPlayerRows)
                 {
-                    setupRow(i, Coin.eCoinType.Black);
+                    setupRow(i, Coin.eCoinType.Player2Coin);
                 }
                 else if(i >= m_BoardSize - numberOfInitialPlayerRows)
                 {
-                    setupRow(i, Coin.eCoinType.Red);
+                    setupRow(i, Coin.eCoinType.Player1Coin);
                 }
                 else
                 {
@@ -69,14 +70,14 @@ namespace EnglishCheckers
             }
         }
 
-        public Square GetSquare(int i_Row, int i_Col)
+        public Square GetSquare(Coordinate i_Coordinate)
         {
-            return m_GameBoard[i_Row, i_Col];
+            return m_GameBoard[i_Coordinate.Row, i_Coordinate.Column];
         }
 
-        public void SetSquare(int i_Row, int i_Col, Coin i_Coin)
+        public void SetSquare(Coordinate i_Coordinate, Coin i_Coin)
         {
-            m_GameBoard[i_Row, i_Col].Coin = i_Coin;
+            m_GameBoard[i_Coordinate.Row, i_Coordinate.Column].Coin = i_Coin;
         }
     }
 }

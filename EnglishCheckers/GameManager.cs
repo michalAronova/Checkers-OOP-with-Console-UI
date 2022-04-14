@@ -35,10 +35,26 @@ namespace EnglishCheckers
         {
             bool isValidMove = ValidateMove(i_SourceCoordinate, i_DestinationCoordinate);
             eGameStatus postMoveGameStatus;
+            Player currentPlayer; //?
 
-            if(isValidMove)
+
+            if (m_Player1sTurn)
             {
+                currentPlayer = m_Player1;
+            }
+            else
+            {
+                currentPlayer = m_Player2;
+            }
 
+            if (isValidMove)
+            {
+                currentPlayer.Move(m_Board.GetSquare(i_SourceCoordinate), m_Board.GetSquare(i_DestinationCoordinate));
+                //check if win/tie
+
+                //else
+                m_Player1sTurn = !m_Player1sTurn;
+                postMoveGameStatus = eGameStatus.ContinueGame;
             }
             else
             {
@@ -50,7 +66,12 @@ namespace EnglishCheckers
 
         private bool ValidateMove(Coordinate i_SourceCoordinate, Coordinate i_DestinationCoordinate)
         {
-
+            bool isValidMove = true;
+            //check if valid physically
+            //
+            //check if valid logicaly, maybe player must move somewhere else
+            //return result
+            return isValidMove;
         }
 
         public eGameStatus InitiateComputerMove()

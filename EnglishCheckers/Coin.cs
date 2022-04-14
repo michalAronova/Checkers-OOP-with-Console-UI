@@ -7,8 +7,8 @@ namespace EnglishCheckers
     {
         public enum eCoinType
         {
-            Red,
-            Black,
+            Player1Coin,
+            Player2Coin,
         }
 
         private eCoinType m_CoinType; //default?
