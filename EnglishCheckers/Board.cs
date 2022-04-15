@@ -49,11 +49,10 @@ namespace EnglishCheckers
 
         private void setRowCoordinates(int i_Row)
         {
-            Coordinate currentCoordinate;
             for(int i = 0; i < m_BoardSize; i++)
             {
-                currentCoordinate = new Coordinate(i_Row, i);
-                m_GameBoard[i_Row, i].Coordinate = currentCoordinate;
+                m_GameBoard[i_Row, i] = new Square();
+                m_GameBoard[i_Row, i].Coordinate = new Coordinate(i_Row, i);
             }
         }
 

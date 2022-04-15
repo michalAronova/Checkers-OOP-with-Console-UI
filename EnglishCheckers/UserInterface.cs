@@ -10,13 +10,14 @@ namespace EnglishCheckers
             int boardSize;
             bool twoPlayerMode = !true;
             bool exitGame = !true;
+            GameManager gameManager = null;
 
             Console.WriteLine("Welcome to English Checkers!");
             m_Player1Name = getValidName();
             boardSize = getBoardSize();
             twoPlayerMode = getGameMode();
             m_Player2Name = twoPlayerMode ? getValidName() : "Computer";
-            GameManager gameManager = new GameManager(boardSize, twoPlayerMode);
+            gameManager = new GameManager(boardSize, twoPlayerMode);
             while (!exitGame)
             {
                 RunGame(gameManager);
@@ -27,8 +28,20 @@ namespace EnglishCheckers
 
         private void RunGame(GameManager i_GameManager)
         {
-            printBoard(i_GameManager.GameBoard);
-            //print board
+            GameManager.eGameStatus eGameStatus = GameManager.eGameStatus.ContinueGame;
+
+            while (eGameStatus == GameManager.eGameStatus.ContinueGame)
+            {
+                printBoard(i_GameManager.GameBoard);
+                //print points/ whos turn
+                eGameStatus = askForMove();
+                while (eGameStatus == GameManager.eGameStatus.InvalidMove)
+                {
+                    eGameStatus = askForMove();
+                }
+                Console.ReadLine();
+            }
+
             //while (the move returns continuegame) loop of asking for moves
             //if Q is entered instead of a move - the current player loses
             //otherwise print message
@@ -38,11 +51,16 @@ namespace EnglishCheckers
         {
             char row = 'a';
 
-            printColumnLines(i_GameBoard.Size);
+            printColumnLine(i_GameBoard.Size);
+            printLowerBound(i_GameBoard.Size);
             for (int i = 0; i < i_GameBoard.Size; i++)
             {
-                Console.WriteLine(string.Format("{0}|{1}", row + i, rowToString(i_GameBoard, i)));
+                Console.WriteLine(string.Format("{0}|{1}", row, rowToString(i_GameBoard, i)));
+                printLowerBound(i_GameBoard.Size);
+                row++;
             }
+
+            //clear screen
         }
 
         private string rowToString(Board i_GameBoard, int i_Row)
@@ -52,7 +70,7 @@ namespace EnglishCheckers
             Coin.eCoinType currentCoinType;
             bool isCurrentCoinKing = !true;
 
-            for(int i = 0; i < i_GameBoard.Size; i++)
+            for (int i = 0; i < i_GameBoard.Size; i++)
             {
                 if (i_GameBoard.GetSquare(coordinate).Coin == null)
                 {
@@ -79,28 +97,41 @@ namespace EnglishCheckers
             return rowToString;
         }
 
-        private void printColumnLines(int i_BoardSize) //refactor?
+        private void printColumnLine(int i_BoardSize)
         {
-            string firstLine = "   ";
-            string secondLine = "===";
+            string firstLine = "  ";
             char column = 'A';
-            for(int i = 0; i < i_BoardSize; i++)
+
+            for (int i = 0; i < i_BoardSize; i++)
             {
                 firstLine += column;
                 firstLine += " ";
-                secondLine += "=";
+                column++;
             }
+
             Console.WriteLine(firstLine);
-            Console.WriteLine(secondLine);
         }
 
-        //private GameManager.eGameStatus askForMove()
-        //{
-        //    ask user
-        //    validate input of move
-        //     initiate move/ initiate computer move
-        //    return the game status to run
-        //}
+        private void printLowerBound(int i_BoardSize)
+        {
+            string lowerBound = "==";
+
+            for (int i = 0; i < i_BoardSize * 2; i++)
+            {
+                lowerBound += "=";
+            }
+
+            Console.WriteLine(lowerBound);
+        }
+
+        private GameManager.eGameStatus askForMove()
+        {
+            //ask user
+            //validate input of move
+            // initiate move/ initiate computer move
+            //return the game status to run
+            return 0;
+        }
 
         private string getValidName()
         {
