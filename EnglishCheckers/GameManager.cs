@@ -15,6 +15,8 @@ namespace EnglishCheckers
             InvalidMove,
             Tie,
         }
+        private Move m_LastMove;
+        private bool m_NextMoveIsDoubleJump;
 
         public GameManager(int i_BoardSize, bool i_IsHumanPlayer)
         {
@@ -32,48 +34,60 @@ namespace EnglishCheckers
 
         public eGameStatus InitiateMove(Coordinate i_SourceCoordinate, Coordinate i_DestinationCoordinate)
         {
-            List<Move> activePlayersValidMoves = calculateMovesForAllPlayersCoins(m_ActivePlayer.PlayersCoins);
+            List<Move> activePlayersValidMoves;
             List<Move> nextPlayersValidMoves;
-            ///bool isValidMove = ValidateMove(i_SourceCoordinate, i_DestinationCoordinate);
+            Move initiatedMove;
+            bool isValidMove;
+            if (m_NextMoveIsDoubleJump)
+            {
+                activePlayersValidMoves = calculateMovesFrom(
+                    m_LastMove.Destination,
+                    m_Board.GetSquare(m_LastMove.Destination).Coin);
+                removeNoJumps(activePlayersValidMoves);
+            }
+            else
+            {
+                activePlayersValidMoves = calculateMovesForAllPlayersCoins(m_ActivePlayer.PlayersCoins);
+            }
             
-            bool isValidMove = activePlayersValidMoves.Exists(
+            isValidMove = activePlayersValidMoves.Exists(
                 move => move.Source.Equals(i_SourceCoordinate) && move.Destination.Equals(i_DestinationCoordinate));
 
             eGameStatus postMoveGameStatus;
 
-            if(isValidMove)
+            if(isValidMove) //maybe put this in a method for modularity
             {
                 m_ActivePlayer.Move(m_Board.GetSquare(i_SourceCoordinate), m_Board.GetSquare(i_DestinationCoordinate));
                 //Board needs to change here too
-                nextPlayersValidMoves = calculateMovesForAllPlayersCoins(m_NextPlayer.PlayersCoins);
-                if(nextPlayersValidMoves.Count == 0)
+                initiatedMove = activePlayersValidMoves.Find(move => move.Source.Equals(i_SourceCoordinate) && move.Destination.Equals(i_DestinationCoordinate));
+                activePlayersValidMoves = calculateMovesFrom(
+                    i_DestinationCoordinate,
+                    m_Board.GetSquare(i_DestinationCoordinate).Coin);
+                if(initiatedMove.IsJumpMove && activePlayersValidMoves.Exists(move => move.IsJumpMove))
                 {
-                    postMoveGameStatus = eGameStatus.ActivePlayerWins;
+                    m_NextMoveIsDoubleJump = true;
+                    postMoveGameStatus = eGameStatus.ContinueGame; //no swapping, stays in activePlayers
                 }
                 else
                 {
-                    activePlayersValidMoves = calculateMovesFrom(
-                        i_DestinationCoordinate,
-                        m_Board.GetSquare(i_DestinationCoordinate).Coin);
-                    if(activePlayersValidMoves.Exists(move => move.IsJumpMove))
+                    m_NextMoveIsDoubleJump = false;
+                    Player.SwapPlayers(ref m_ActivePlayer, ref m_NextPlayer);
+                    nextPlayersValidMoves = calculateMovesForAllPlayersCoins(m_NextPlayer.PlayersCoins);
+                    if (nextPlayersValidMoves.Count == 0)
                     {
-                        ///need to calcuate moves from destination -> if theres another jump - no swap! this is the only valid move!
-                        /// this might mean we need to save this list in player :(
-                        /// and then here we will calculate it and remove all others
-                        /// but gamemanager has to be the one to calculate it
-                        postMoveGameStatus = eGameStatus.ContinueGame; //no swapping, stays in activePlayers
-                    }
-                    else
-                    {
-                        Player.SwapPlayers(ref m_ActivePlayer, ref m_NextPlayer);
-                        if(m_ActivePlayer.IsHumanPlayer)
+                        activePlayersValidMoves = calculateMovesForAllPlayersCoins(m_ActivePlayer.PlayersCoins);
+                        if(activePlayersValidMoves.Count == 0)
                         {
-                            postMoveGameStatus = eGameStatus.ContinueGame;
+                            postMoveGameStatus = eGameStatus.Tie;
                         }
                         else
                         {
-                            postMoveGameStatus = InitiateComputerMove();
+                            postMoveGameStatus = eGameStatus.ActivePlayerWins;
                         }
+                    }
+                    else
+                    {
+                        postMoveGameStatus = eGameStatus.ContinueGame;
                     }
                 }
             }
@@ -106,12 +120,13 @@ namespace EnglishCheckers
             foreach (KeyValuePair<Coordinate, Coin> coinCoordinate in i_PlayersCoins)
             {
                 movesFromGivenCoin = calculateMovesFrom(coinCoordinate.Key, coinCoordinate.Value);
-                if(movesFromGivenCoin != null)
+                removeNoJumps(allPossibleMoves);    
+                if(movesFromGivenCoin.Count == 0)
                 {
                     movesFromGivenCoin.ForEach(move => allPossibleMoves.Add(move));
                 }
             }
-            removeNoJumps(allPossibleMoves);
+
             return allPossibleMoves;
         }
 
@@ -147,6 +162,7 @@ namespace EnglishCheckers
         {
             List<Coordinate> possibleDiagonalCoordinates = m_Board.GetDiagonalInDirection(i_SourceCoordinate, i_Direction);
             bool isAJumpMove = true;
+            bool isLeftMove;
             List<Move> possibleMoves = new List<Move>();
             List<Coordinate> possibleJumps = null;
             foreach (Coordinate diagonalCoordinate in possibleDiagonalCoordinates)
@@ -157,10 +173,11 @@ namespace EnglishCheckers
                 }
                 else if(i_CoinToMove.Type != m_Board.GetSquare(diagonalCoordinate).Coin.Type)
                 {
+                    isLeftMove = m_Board.checkIfLeftMove(i_SourceCoordinate, diagonalCoordinate);
                     possibleJumps = m_Board.GetDiagonalInDirection(diagonalCoordinate, i_Direction);
                     foreach(Coordinate jumpCoordinate in possibleJumps)
                     {
-                        if(m_Board.GetSquare(jumpCoordinate).Coin == null)
+                        if(m_Board.GetSquare(jumpCoordinate).Coin == null && isLeftMove == m_Board.checkIfLeftMove(diagonalCoordinate, jumpCoordinate))
                         {
                             possibleMoves.Add(new Move(i_SourceCoordinate, jumpCoordinate, i_Direction, isAJumpMove));
                         }

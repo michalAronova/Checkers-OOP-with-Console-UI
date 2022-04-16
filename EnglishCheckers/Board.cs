@@ -91,6 +91,11 @@ namespace EnglishCheckers
             }
             return diagonalCoordinates;
         }
+
+        public bool checkIfLeftMove(Coordinate i_SourceCoordinate, Coordinate i_DestinationCoordinate)
+        {
+            return i_SourceCoordinate.Column - 1 == i_DestinationCoordinate.Column;
+        }
         public void SetSquare(Coordinate i_Coordinate, Coin i_Coin)
         {
             m_GameBoard[i_Coordinate.Row, i_Coordinate.Column].Coin = i_Coin;
