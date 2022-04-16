@@ -74,6 +74,23 @@ namespace EnglishCheckers
             return m_GameBoard[i_Coordinate.Row, i_Coordinate.Column];
         }
 
+        public List<Coordinate> GetDiagonalInDirection(Coordinate i_Coordinate, Player.eDirection i_Direction)
+        {
+            List<Coordinate> diagonalCoordinates = new List<Coordinate>();
+            int nextRow = (i_Direction == Player.eDirection.Down) ? i_Coordinate.Row + 1 : i_Coordinate.Row - 1;
+            if(nextRow >= 0 && nextRow < m_BoardSize)
+            {
+                if (i_Coordinate.Column - 1 >= 0)
+                {
+                    diagonalCoordinates.Add(new Coordinate(nextRow, i_Coordinate.Column - 1));
+                }
+                else if (i_Coordinate.Column + 1 < m_BoardSize)
+                {
+                    diagonalCoordinates.Add(new Coordinate(nextRow, i_Coordinate.Column + 1));
+                }
+            }
+            return diagonalCoordinates;
+        }
         public void SetSquare(Coordinate i_Coordinate, Coin i_Coin)
         {
             m_GameBoard[i_Coordinate.Row, i_Coordinate.Column].Coin = i_Coin;

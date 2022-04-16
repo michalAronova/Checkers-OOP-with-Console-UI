@@ -58,6 +58,13 @@ namespace EnglishCheckers
                 return r_Direction;
             }
         }
+        public Dictionary<Coordinate, Coin> PlayersCoins
+        {
+            get
+            {
+                return m_PlayersCoins;
+            }
+        }
         public void Move(Square i_SourceSquare, Square i_DestinationSquare) //makes legal move
         {
             i_DestinationSquare.Coin = i_SourceSquare.Coin;
@@ -65,6 +72,7 @@ namespace EnglishCheckers
             m_PlayersCoins.Remove(i_SourceSquare.Coordinate);
             m_PlayersCoins.Add(i_DestinationSquare.Coordinate, i_DestinationSquare.Coin);
         }
+        
 
         public static void SwapPlayers(ref Player i_Player1, ref Player i_Player2)
         {
@@ -72,5 +80,6 @@ namespace EnglishCheckers
             i_Player1 = i_Player2;
             i_Player2 = tempPlayer;
         }
+
     }
 }

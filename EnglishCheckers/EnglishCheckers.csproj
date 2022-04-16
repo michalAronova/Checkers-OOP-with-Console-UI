@@ -35,6 +35,7 @@
     <Compile Include="Board.cs" />
     <Compile Include="Coin.cs" />
     <Compile Include="Coordinate.cs" />
+    <Compile Include="Move.cs" />
     <Compile Include="Square.cs" />
     <Compile Include="GameManager.cs" />
     <Compile Include="Player.cs" />
