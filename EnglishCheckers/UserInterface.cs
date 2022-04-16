@@ -1,23 +1,30 @@
 ﻿using System;
+using System.Text;
+
 namespace EnglishCheckers
 {
     public class UserInterface
     {
         private string m_Player1Name = null;
         private string m_Player2Name = null;
+        private bool m_twoPlayerMode = !true;
+        private readonly char r_Player1Coin = 'X';
+        private readonly char r_Player2Coin = 'O';
+        private readonly char r_Player1King = 'K';
+        private readonly char r_Player2King = 'U';
+
         public void InitializeGame()
         {
             int boardSize;
-            bool twoPlayerMode = !true;
             bool exitGame = !true;
             GameManager gameManager = null;
 
             Console.WriteLine("Welcome to English Checkers!");
             m_Player1Name = getValidName();
             boardSize = getBoardSize();
-            twoPlayerMode = getGameMode();
-            m_Player2Name = twoPlayerMode ? getValidName() : "Computer";
-            gameManager = new GameManager(boardSize, twoPlayerMode);
+            m_twoPlayerMode = getGameMode();
+            m_Player2Name = m_twoPlayerMode ? getValidName() : "Computer";
+            gameManager = new GameManager(boardSize, m_twoPlayerMode);
             while (!exitGame)
             {
                 RunGame(gameManager);
@@ -26,25 +33,27 @@ namespace EnglishCheckers
             }
         }
 
-        private void RunGame(GameManager i_GameManager)
+        private void RunGame(GameManager io_GameManager)
         {
             GameManager.eGameStatus eGameStatus = GameManager.eGameStatus.ContinueGame;
+            StringBuilder previousMove = new StringBuilder();
 
             while (eGameStatus == GameManager.eGameStatus.ContinueGame)
             {
-                printBoard(i_GameManager.GameBoard);
-                //print points/ whos turn
-                eGameStatus = askForMove();
-                while (eGameStatus == GameManager.eGameStatus.InvalidMove)
+                printBoard(io_GameManager.GameBoard);
+                printGameState(io_GameManager.IsPlayer1sTurn, previousMove);
+                eGameStatus = getAndInitiateMove(io_GameManager, previousMove);                        //=======>    // save previous move!! if computer mode-
+                while (eGameStatus == GameManager.eGameStatus.InvalidMove)                // get move from logic and convert to string
                 {
-                    eGameStatus = askForMove();
+                    eGameStatus = getAndInitiateMove(io_GameManager, previousMove);
                 }
-                Console.ReadLine();
+
+                Console.ReadLine(); //REMOVE LATER
+                //sleep 3 secs?? maybe in the start of the block
+                //clear screen
             }
 
-            //while (the move returns continuegame) loop of asking for moves
             //if Q is entered instead of a move - the current player loses
-            //otherwise print message
         }
 
         private void printBoard(Board i_GameBoard)
@@ -55,12 +64,27 @@ namespace EnglishCheckers
             printLowerBound(i_GameBoard.Size);
             for (int i = 0; i < i_GameBoard.Size; i++)
             {
-                Console.WriteLine(string.Format("{0}|{1}", row, rowToString(i_GameBoard, i)));
+                Console.WriteLine(string.Format(" {0} |{1}", row, rowToString(i_GameBoard, i)));
                 printLowerBound(i_GameBoard.Size);
                 row++;
             }
 
-            //clear screen
+            ///////////////////clear screen
+        }
+
+        private void printGameState(bool i_IsPlayer1sTurn, StringBuilder io_PreviousMove)
+        {
+            string currentPlayerName = i_IsPlayer1sTurn ? m_Player1Name : m_Player2Name;
+            string previousPlayerName = i_IsPlayer1sTurn ? m_Player2Name : m_Player1Name;
+            char currentPlayerCoin = i_IsPlayer1sTurn ? r_Player1Coin : r_Player2Coin;
+            char previousPlayerCoin = i_IsPlayer1sTurn ? r_Player2Coin : r_Player1Coin;
+
+            if (io_PreviousMove.Length != 0)
+            {
+                Console.WriteLine(string.Format("{0}'s move was ({1}): {2}", previousPlayerName, previousPlayerCoin, io_PreviousMove));
+            }
+
+            Console.WriteLine(string.Format("{0}'s turn ({1}):", currentPlayerName, currentPlayerCoin));
         }
 
         private string rowToString(Board i_GameBoard, int i_Row)
@@ -74,20 +98,23 @@ namespace EnglishCheckers
             {
                 if (i_GameBoard.GetSquare(coordinate).Coin == null)
                 {
-                    rowToString += " ";
+                    rowToString += "   ";
                 }
                 else
                 {
                     currentCoinType = i_GameBoard.GetSquare(coordinate).Coin.Type;
                     isCurrentCoinKing = i_GameBoard.GetSquare(coordinate).Coin.IsKing;
+                    rowToString += " ";
                     if (currentCoinType == Coin.eCoinType.Player1Coin)
                     {
-                        rowToString += isCurrentCoinKing ? "K" : "X";
+                        rowToString += isCurrentCoinKing ? r_Player1King : r_Player1Coin;
                     }
                     else
                     {
-                        rowToString += isCurrentCoinKing ? "U" : "O";
+                        rowToString += isCurrentCoinKing ? r_Player2King : r_Player2Coin;
                     }
+
+                    rowToString += " ";
                 }
 
                 rowToString += "|";
@@ -99,13 +126,13 @@ namespace EnglishCheckers
 
         private void printColumnLine(int i_BoardSize)
         {
-            string firstLine = "  ";
+            string firstLine = "     ";
             char column = 'A';
 
             for (int i = 0; i < i_BoardSize; i++)
             {
                 firstLine += column;
-                firstLine += " ";
+                firstLine += "   ";
                 column++;
             }
 
@@ -114,23 +141,35 @@ namespace EnglishCheckers
 
         private void printLowerBound(int i_BoardSize)
         {
-            string lowerBound = "==";
+            string lowerBound = "====";
 
-            for (int i = 0; i < i_BoardSize * 2; i++)
+            for (int i = 0; i < i_BoardSize; i++)
             {
-                lowerBound += "=";
+                lowerBound += "====";
             }
 
             Console.WriteLine(lowerBound);
         }
 
-        private GameManager.eGameStatus askForMove()
+        private GameManager.eGameStatus getAndInitiateMove(GameManager io_GameManager, StringBuilder o_MoveString)
         {
-            //ask user
-            //validate input of move
-            // initiate move/ initiate computer move
-            //return the game status to run
-            return 0;
+            GameManager.eGameStatus gameStatus = 0;
+            Coordinate sourceCoordinate = new Coordinate();
+            Coordinate destinationCoordinate = new Coordinate();
+
+            if (!m_twoPlayerMode && !io_GameManager.IsPlayer1sTurn)
+            {
+                // gameStatus = io_GameManager.InitiateComputerMove(out sourceCoordinate, out destinationCoordinate);
+                convertCoordinatesToMoveString(o_MoveString, sourceCoordinate, destinationCoordinate);
+            }
+            else
+            {
+                getValidMove(o_MoveString, io_GameManager.GameBoard.Size);
+                convertStringToCoordinates(o_MoveString, out sourceCoordinate, out destinationCoordinate);
+                //gameStatus = io_GameManager.InitiateMove(sourceCoordinate, destinationCoordinate);
+            }
+
+            return gameStatus;
         }
 
         private string getValidName()
@@ -154,15 +193,57 @@ namespace EnglishCheckers
                 invalidInputMessage(isValidName);
             }
 
-            //clear screen
+            ///////////////////////////////clear screen
 
             return name;
+        }
+
+        private void getValidMove(StringBuilder o_MoveString, int i_BoardSize)
+        {
+            bool isValidMove = !true;
+
+            while (!isValidMove)
+            {
+                o_MoveString.Insert(0, Console.ReadLine());
+                isValidMove = (o_MoveString.Length == 5);
+                for (int i = 0; i < o_MoveString.Length && isValidMove; i++)
+                {
+                    switch (i)
+                    {
+                        case 0:
+                        case 3:
+                            if(o_MoveString[i] < 'A' || o_MoveString[i] >= ('A'+ i_BoardSize))
+                            {
+                                isValidMove = !true;
+                            }
+                            break;
+                        case 1:
+                        case 4:
+                            if (o_MoveString[i] < 'a' || o_MoveString[i] >= ('a' + i_BoardSize))
+                            {
+                                isValidMove = !true;
+                            }
+                            break;
+                        case 2:
+                            if (o_MoveString[i] != '>')
+                            {
+                                isValidMove = !true;
+                            }
+                            break;
+                    }
+                }
+
+                invalidInputMessage(isValidMove);
+            }
+
+            ///////////////////////////////clear screen
         }
 
         private int getBoardSize()
         {
             int boardSize = 0;
             bool validInput = !true;
+
             System.Console.WriteLine(string.Format(
 @"Please choose board size:
 (6) 6X6     (8) 8X8     (10) 10X10"));
@@ -204,6 +285,43 @@ namespace EnglishCheckers
             {
                 Console.WriteLine("Invalid input! Please try again");
             }
+        }
+
+        private void convertStringToCoordinates(StringBuilder i_MoveString, out Coordinate o_sourceCoordinate, out Coordinate o_destinationCoordinate)
+        {
+            o_sourceCoordinate = convertCharsToCoordinate(i_MoveString[0], i_MoveString[1]);
+            o_destinationCoordinate = convertCharsToCoordinate(i_MoveString[3], i_MoveString[4]); ;
+        }
+
+        private Coordinate convertCharsToCoordinate(char i_Column, char i_Row)
+        {
+            Coordinate coordinate = new Coordinate((i_Row - 'a'),(i_Column - 'A'));
+
+            return coordinate;
+        }
+
+        private void convertCoordinatesToMoveString(StringBuilder o_MoveString, Coordinate i_SourceCoordinate, Coordinate i_DestinationCoordinate)
+        {
+            insertCoordinateToString(o_MoveString, 0, i_SourceCoordinate);
+            o_MoveString.Insert(2, '>');
+            insertCoordinateToString(o_MoveString, 3, i_DestinationCoordinate);
+        }
+
+        private void insertCoordinateToString(StringBuilder o_MoveString, int i_StartIndex, Coordinate i_Coordinate)
+        {
+            o_MoveString.Insert(i_StartIndex, getCharOfColumn(i_Coordinate.Column));
+            i_StartIndex++;
+            o_MoveString.Insert(i_StartIndex, getCharOfRow(i_Coordinate.Row));
+        }
+
+        private char getCharOfColumn(int i_Column)
+        {
+            return (char)('A' + i_Column);
+        }
+
+        private char getCharOfRow(int i_Row)
+        {
+            return (char)('a' + i_Row);
         }
     }
 }
