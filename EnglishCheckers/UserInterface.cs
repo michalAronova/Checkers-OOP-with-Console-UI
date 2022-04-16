@@ -28,24 +28,27 @@ namespace EnglishCheckers
             while (!exitGame)
             {
                 RunGame(gameManager);
-                //ask if wants another round
-                //initilize game
+                exitGame = exitGameOrContinue();
+                //initilize game from gamemanager
             }
+            Console.WriteLine("Goodbye and Thank you for playing :)");
         }
 
         private void RunGame(GameManager io_GameManager)
         {
             GameManager.eGameStatus eGameStatus = GameManager.eGameStatus.ContinueGame;
             StringBuilder previousMove = new StringBuilder();
+            bool isPlayer1sTurn = !true;
 
             while (eGameStatus == GameManager.eGameStatus.ContinueGame)
             {
+                isPlayer1sTurn = !isPlayer1sTurn;
                 printBoard(io_GameManager.GameBoard);
-                printGameState(io_GameManager.IsPlayer1sTurn, previousMove);
-                eGameStatus = getAndInitiateMove(io_GameManager, previousMove);                        //=======>    // save previous move!! if computer mode-
-                while (eGameStatus == GameManager.eGameStatus.InvalidMove)                // get move from logic and convert to string
+                printGameState(isPlayer1sTurn, previousMove);
+                eGameStatus = getAndInitiateMove(io_GameManager, previousMove, isPlayer1sTurn);
+                while (eGameStatus == GameManager.eGameStatus.InvalidMove)
                 {
-                    eGameStatus = getAndInitiateMove(io_GameManager, previousMove);
+                    eGameStatus = getAndInitiateMove(io_GameManager, previousMove, isPlayer1sTurn);
                 }
 
                 Console.ReadLine(); //REMOVE LATER
@@ -53,7 +56,8 @@ namespace EnglishCheckers
                 //clear screen
             }
 
-            //if Q is entered instead of a move - the current player loses
+            printGameResult(eGameStatus);
+            //get and print points from game manager..
         }
 
         private void printBoard(Board i_GameBoard)
@@ -151,22 +155,51 @@ namespace EnglishCheckers
             Console.WriteLine(lowerBound);
         }
 
-        private GameManager.eGameStatus getAndInitiateMove(GameManager io_GameManager, StringBuilder o_MoveString)
+        private void printGameResult(GameManager.eGameStatus i_eGameStatus)
+        {
+            switch (i_eGameStatus)
+            {
+                case GameManager.eGameStatus.Player1Wins:
+                    Console.WriteLine("{0} won!!", m_Player1Name);
+                    break;
+                case GameManager.eGameStatus.Player2Wins:
+                    if (m_twoPlayerMode)
+                    {
+                        Console.WriteLine("{0} won!!", m_Player2Name);
+                    }
+                    else
+                    {
+                        Console.WriteLine("The computer won!!");
+                    }
+                    break;
+                case GameManager.eGameStatus.Tie:
+                    Console.WriteLine("It's a tie!");
+                    break;
+            }
+        }
+
+        private GameManager.eGameStatus getAndInitiateMove(GameManager io_GameManager, StringBuilder o_MoveString, bool i_IsPlayer1sTurn)
         {
             GameManager.eGameStatus gameStatus = 0;
             Coordinate sourceCoordinate = new Coordinate();
             Coordinate destinationCoordinate = new Coordinate();
 
-            if (!m_twoPlayerMode && !io_GameManager.IsPlayer1sTurn)
+            if (!m_twoPlayerMode && !i_IsPlayer1sTurn)
             {
                 // gameStatus = io_GameManager.InitiateComputerMove(out sourceCoordinate, out destinationCoordinate);
                 convertCoordinatesToMoveString(o_MoveString, sourceCoordinate, destinationCoordinate);
             }
             else
             {
-                getValidMove(o_MoveString, io_GameManager.GameBoard.Size);
-                convertStringToCoordinates(o_MoveString, out sourceCoordinate, out destinationCoordinate);
-                //gameStatus = io_GameManager.InitiateMove(sourceCoordinate, destinationCoordinate);
+                if (getValidMoveAndReturIfQuit(o_MoveString, io_GameManager.GameBoard.Size))
+                {
+                    //gameStatus =  gameManager.player quit..
+                }
+                else
+                {
+                    convertStringToCoordinates(o_MoveString, out sourceCoordinate, out destinationCoordinate);
+                    //gameStatus = io_GameManager.InitiateMove(sourceCoordinate, destinationCoordinate);
+                }
             }
 
             return gameStatus;
@@ -198,45 +231,54 @@ namespace EnglishCheckers
             return name;
         }
 
-        private void getValidMove(StringBuilder o_MoveString, int i_BoardSize)
+        private bool getValidMoveAndReturIfQuit(StringBuilder o_MoveString, int i_BoardSize)
         {
             bool isValidMove = !true;
+            bool didPlayerQuit = !true;
 
             while (!isValidMove)
             {
                 o_MoveString.Insert(0, Console.ReadLine());
-                isValidMove = (o_MoveString.Length == 5);
-                for (int i = 0; i < o_MoveString.Length && isValidMove; i++)
+                if (o_MoveString.Length == 1 && o_MoveString[0] == 'Q')
                 {
-                    switch (i)
+                    isValidMove = true;
+                    didPlayerQuit = true;
+                }
+                else
+                {
+                    isValidMove = (o_MoveString.Length == 5);
+                    for (int i = 0; i < o_MoveString.Length && isValidMove; i++)
                     {
-                        case 0:
-                        case 3:
-                            if(o_MoveString[i] < 'A' || o_MoveString[i] >= ('A'+ i_BoardSize))
-                            {
-                                isValidMove = !true;
-                            }
-                            break;
-                        case 1:
-                        case 4:
-                            if (o_MoveString[i] < 'a' || o_MoveString[i] >= ('a' + i_BoardSize))
-                            {
-                                isValidMove = !true;
-                            }
-                            break;
-                        case 2:
-                            if (o_MoveString[i] != '>')
-                            {
-                                isValidMove = !true;
-                            }
-                            break;
+                        switch (i)
+                        {
+                            case 0:
+                            case 3:
+                                if (o_MoveString[i] < 'A' || o_MoveString[i] >= ('A' + i_BoardSize))
+                                {
+                                    isValidMove = !true;
+                                }
+                                break;
+                            case 1:
+                            case 4:
+                                if (o_MoveString[i] < 'a' || o_MoveString[i] >= ('a' + i_BoardSize))
+                                {
+                                    isValidMove = !true;
+                                }
+                                break;
+                            case 2:
+                                if (o_MoveString[i] != '>')
+                                {
+                                    isValidMove = !true;
+                                }
+                                break;
+                        }
                     }
                 }
-
                 invalidInputMessage(isValidMove);
             }
 
             ///////////////////////////////clear screen
+            return didPlayerQuit;
         }
 
         private int getBoardSize()
@@ -322,6 +364,21 @@ namespace EnglishCheckers
         private char getCharOfRow(int i_Row)
         {
             return (char)('a' + i_Row);
+        }
+
+        private bool exitGameOrContinue()
+        {
+            int input;
+            bool exitGame = !true;
+
+            System.Console.WriteLine("Press any key to continue, or ESC to Exit game");
+            input = Console.Read();
+            if (input == 27)
+            {
+                exitGame = true;
+            }
+
+            return exitGame;
         }
     }
 }
