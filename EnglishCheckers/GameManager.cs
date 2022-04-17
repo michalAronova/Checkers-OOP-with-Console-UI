@@ -35,9 +35,10 @@ namespace EnglishCheckers
         public eGameStatus InitiateMove(Coordinate i_SourceCoordinate, Coordinate i_DestinationCoordinate)
         {
             List<Move> activePlayersValidMoves;
-            List<Move> nextPlayersValidMoves;
             Move initiatedMove;
             bool isValidMove;
+            eGameStatus postMoveGameStatus;
+
             if (m_NextMoveIsDoubleJump)
             {
                 activePlayersValidMoves = calculateMovesFrom(
@@ -50,45 +51,24 @@ namespace EnglishCheckers
                 activePlayersValidMoves = calculateMovesForAllPlayersCoins(m_ActivePlayer.PlayersCoins);
             }
             
-            isValidMove = activePlayersValidMoves.Exists(
-                move => move.Source.Equals(i_SourceCoordinate) && move.Destination.Equals(i_DestinationCoordinate));
+            initiatedMove = activePlayersValidMoves.Find(move => move.Source.Equals(i_SourceCoordinate) && move.Destination.Equals(i_DestinationCoordinate));
+            isValidMove = initiatedMove != null;
 
-            eGameStatus postMoveGameStatus;
-
-            if(isValidMove) //maybe put this in a method for modularity
+            if(isValidMove) 
             {
-                m_ActivePlayer.Move(m_Board.GetSquare(i_SourceCoordinate), m_Board.GetSquare(i_DestinationCoordinate));
-                //Board needs to change here too
-                initiatedMove = activePlayersValidMoves.Find(move => move.Source.Equals(i_SourceCoordinate) && move.Destination.Equals(i_DestinationCoordinate));
+                performMove(i_SourceCoordinate, i_DestinationCoordinate);
                 activePlayersValidMoves = calculateMovesFrom(
                     i_DestinationCoordinate,
                     m_Board.GetSquare(i_DestinationCoordinate).Coin);
                 if(initiatedMove.IsJumpMove && activePlayersValidMoves.Exists(move => move.IsJumpMove))
                 {
                     m_NextMoveIsDoubleJump = true;
-                    postMoveGameStatus = eGameStatus.ContinueGame; //no swapping, stays in activePlayers
+                    m_LastMove = initiatedMove;
+                    postMoveGameStatus = eGameStatus.ContinueGame;
                 }
                 else
                 {
-                    m_NextMoveIsDoubleJump = false;
-                    Player.SwapPlayers(ref m_ActivePlayer, ref m_NextPlayer);
-                    nextPlayersValidMoves = calculateMovesForAllPlayersCoins(m_NextPlayer.PlayersCoins);
-                    if (nextPlayersValidMoves.Count == 0)
-                    {
-                        activePlayersValidMoves = calculateMovesForAllPlayersCoins(m_ActivePlayer.PlayersCoins);
-                        if(activePlayersValidMoves.Count == 0)
-                        {
-                            postMoveGameStatus = eGameStatus.Tie;
-                        }
-                        else
-                        {
-                            postMoveGameStatus = eGameStatus.ActivePlayerWins;
-                        }
-                    }
-                    else
-                    {
-                        postMoveGameStatus = eGameStatus.ContinueGame;
-                    }
+                    postMoveGameStatus = handleTurnTransfer();
                 }
             }
             else
@@ -98,7 +78,43 @@ namespace EnglishCheckers
 
             return postMoveGameStatus;
         }
-        
+
+        private void performMove(Coordinate i_SourceCoordinate, Coordinate i_DestinationCoordinate)
+        {
+            m_ActivePlayer.Move(m_Board.GetSquare(i_SourceCoordinate), m_Board.GetSquare(i_DestinationCoordinate));
+            m_Board.MoveCoin(i_SourceCoordinate, i_DestinationCoordinate);
+        }
+
+        private eGameStatus handleTurnTransfer()
+        {
+            eGameStatus postMoveGameStatus;
+            List<Move> activePlayersValidMoves;
+            List<Move> nextPlayersValidMoves;
+            m_NextMoveIsDoubleJump = false;
+
+            Player.SwapPlayers(ref m_ActivePlayer, ref m_NextPlayer);
+            nextPlayersValidMoves = calculateMovesForAllPlayersCoins(m_NextPlayer.PlayersCoins);
+
+            if (nextPlayersValidMoves.Count == 0)
+            {
+                activePlayersValidMoves = calculateMovesForAllPlayersCoins(m_ActivePlayer.PlayersCoins);
+                if (activePlayersValidMoves.Count == 0)
+                {
+                    postMoveGameStatus = eGameStatus.Tie;
+                }
+                else
+                {
+                    postMoveGameStatus = eGameStatus.ActivePlayerWins;
+                }
+            }
+            else
+            {
+                postMoveGameStatus = eGameStatus.ContinueGame;
+            }
+
+            return postMoveGameStatus;
+        }
+
         private void removeNoJumps(List<Move> i_Moves)
         {
             if(i_Moves.Exists(move => move.IsJumpMove))

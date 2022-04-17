@@ -74,6 +74,13 @@ namespace EnglishCheckers
             return m_GameBoard[i_Coordinate.Row, i_Coordinate.Column];
         }
 
+        public void MoveCoin(Coordinate i_SourceCoordinate, Coordinate i_DestinationCoordinate)
+        {
+            Coin movingCoin = GetSquare(i_SourceCoordinate).Coin;
+            SetSquare(i_DestinationCoordinate, movingCoin);
+            SetSquare(i_SourceCoordinate, null);
+        }
+
         public List<Coordinate> GetDiagonalInDirection(Coordinate i_Coordinate, Player.eDirection i_Direction)
         {
             List<Coordinate> diagonalCoordinates = new List<Coordinate>();

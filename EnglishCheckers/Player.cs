@@ -65,7 +65,7 @@ namespace EnglishCheckers
                 return m_PlayersCoins;
             }
         }
-        public void Move(Square i_SourceSquare, Square i_DestinationSquare) //makes legal move
+        public void Move(Square i_SourceSquare, Square i_DestinationSquare)
         {
             i_DestinationSquare.Coin = i_SourceSquare.Coin;
             i_SourceSquare.Coin = null;
