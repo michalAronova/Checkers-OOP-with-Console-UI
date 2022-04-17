@@ -5,8 +5,8 @@ namespace EnglishCheckers
     public class GameManager
     {
         private Board m_Board = null;
-        private Player m_ActivePlayer = new Player(Player.eDirection.Down, Coin.eCoinType.Player1Coin);
-        private Player m_NextPlayer = new Player(Player.eDirection.Up, Coin.eCoinType.Player2Coin);
+        private Player m_ActivePlayer;
+        private Player m_NextPlayer;
         public enum eGameStatus
         {
             ContinueGame,
@@ -20,7 +20,12 @@ namespace EnglishCheckers
 
         public GameManager(int i_BoardSize, bool i_IsHumanPlayer)
         {
+            Dictionary<Coordinate, Coin> player1Coins;
+            Dictionary<Coordinate, Coin> player2Coins;
             m_Board = new Board(i_BoardSize);
+            m_Board.GetCoordinateToCoinDictionaries(out player1Coins, out player2Coins);
+            m_ActivePlayer = new Player(Player.eDirection.Down, Coin.eCoinType.Player1Coin, player1Coins);
+            m_NextPlayer = new Player(Player.eDirection.Up, Coin.eCoinType.Player2Coin, player2Coins);
             m_NextPlayer.IsHumanPlayer = i_IsHumanPlayer;
         }
 
@@ -57,11 +62,11 @@ namespace EnglishCheckers
             if(isValidMove) 
             {
                 performMove(i_SourceCoordinate, i_DestinationCoordinate);
-                activePlayersValidMoves = calculateMovesFrom(
-                    i_DestinationCoordinate,
-                    m_Board.GetSquare(i_DestinationCoordinate).Coin);
                 if(initiatedMove.IsJumpMove && activePlayersValidMoves.Exists(move => move.IsJumpMove))
                 {
+                    activePlayersValidMoves = calculateMovesFrom(
+                        i_DestinationCoordinate,
+                        m_Board.GetSquare(i_DestinationCoordinate).Coin);
                     m_NextMoveIsDoubleJump = true;
                     m_LastMove = initiatedMove;
                     postMoveGameStatus = eGameStatus.ContinueGame;
@@ -81,8 +86,8 @@ namespace EnglishCheckers
 
         private void performMove(Coordinate i_SourceCoordinate, Coordinate i_DestinationCoordinate)
         {
-            m_ActivePlayer.Move(m_Board.GetSquare(i_SourceCoordinate), m_Board.GetSquare(i_DestinationCoordinate));
             m_Board.MoveCoin(i_SourceCoordinate, i_DestinationCoordinate);
+            m_ActivePlayer.UpdatePlayersCoins(i_SourceCoordinate, i_DestinationCoordinate);
         }
 
         private eGameStatus handleTurnTransfer()
@@ -92,7 +97,7 @@ namespace EnglishCheckers
             List<Move> nextPlayersValidMoves;
             m_NextMoveIsDoubleJump = false;
 
-            Player.SwapPlayers(ref m_ActivePlayer, ref m_NextPlayer);
+            swapPlayers(ref m_ActivePlayer, ref m_NextPlayer);
             nextPlayersValidMoves = calculateMovesForAllPlayersCoins(m_NextPlayer.PlayersCoins);
 
             if (nextPlayersValidMoves.Count == 0)
@@ -113,6 +118,12 @@ namespace EnglishCheckers
             }
 
             return postMoveGameStatus;
+        }
+        private void swapPlayers(ref Player i_Player1, ref Player i_Player2)
+        {
+            Player tempPlayer = i_Player1;
+            i_Player1 = i_Player2;
+            i_Player2 = tempPlayer;
         }
 
         private void removeNoJumps(List<Move> i_Moves)
@@ -137,7 +148,7 @@ namespace EnglishCheckers
             {
                 movesFromGivenCoin = calculateMovesFrom(coinCoordinate.Key, coinCoordinate.Value);
                 removeNoJumps(allPossibleMoves);    
-                if(movesFromGivenCoin.Count == 0)
+                if(movesFromGivenCoin.Count != 0)
                 {
                     movesFromGivenCoin.ForEach(move => allPossibleMoves.Add(move));
                 }
@@ -315,9 +326,9 @@ namespace EnglishCheckers
         ///    int distanceToCheck = i_IsDoubleMove ? 2 : 1;
         ///    return ((i_SourceColumn - distanceToCheck == i_DestinationColumn) || (i_SourceColumn + distanceToCheck == i_DestinationColumn));
         ///}
-        private eGameStatus InitiateComputerMove()
-        {
-            
-        }
+        ///private eGameStatus InitiateComputerMove()
+        ///{
+        ///    
+        ///}
     }
 }

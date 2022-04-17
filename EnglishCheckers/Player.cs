@@ -16,10 +16,11 @@ namespace EnglishCheckers
             Up,
             Down,
         }
-        public Player(eDirection i_Direction, Coin.eCoinType i_CoinType)
+        public Player(eDirection i_Direction, Coin.eCoinType i_CoinType, Dictionary<Coordinate,Coin> i_PlayersCoins)
         {
             r_Direction = i_Direction;
             r_PlayersCoinType = i_CoinType;
+            m_PlayersCoins = i_PlayersCoins;
         }
 
         public string Name
@@ -65,21 +66,11 @@ namespace EnglishCheckers
                 return m_PlayersCoins;
             }
         }
-        public void Move(Square i_SourceSquare, Square i_DestinationSquare)
+        public void UpdatePlayersCoins(Coordinate i_SourceSquare, Coordinate i_DestinationSquare)
         {
-            i_DestinationSquare.Coin = i_SourceSquare.Coin;
-            i_SourceSquare.Coin = null;
-            m_PlayersCoins.Remove(i_SourceSquare.Coordinate);
-            m_PlayersCoins.Add(i_DestinationSquare.Coordinate, i_DestinationSquare.Coin);
+            Coin movedCoin = m_PlayersCoins[i_SourceSquare];
+            m_PlayersCoins.Remove(i_SourceSquare);
+            m_PlayersCoins.Add(i_DestinationSquare, movedCoin);
         }
-        
-
-        public static void SwapPlayers(ref Player i_Player1, ref Player i_Player2)
-        {
-            Player tempPlayer = i_Player1;
-            i_Player1 = i_Player2;
-            i_Player2 = tempPlayer;
-        }
-
     }
 }

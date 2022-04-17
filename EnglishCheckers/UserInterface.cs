@@ -63,12 +63,14 @@ namespace EnglishCheckers
         private void printBoard(Board i_GameBoard)
         {
             char row = 'a';
+            string correspondingStringToRow;
 
             printColumnLine(i_GameBoard.Size);
             printLowerBound(i_GameBoard.Size);
             for (int i = 0; i < i_GameBoard.Size; i++)
             {
-                Console.WriteLine(string.Format(" {0} |{1}", row, rowToString(i_GameBoard, i)));
+                correspondingStringToRow = rowToString(i_GameBoard, i);
+                Console.WriteLine(" {0} |{1}", row, correspondingStringToRow);
                 printLowerBound(i_GameBoard.Size);
                 row++;
             }
@@ -159,10 +161,10 @@ namespace EnglishCheckers
         {
             switch (i_eGameStatus)
             {
-                case GameManager.eGameStatus.Player1Wins:
+                case GameManager.eGameStatus.ActivePlayerWins:
                     Console.WriteLine("{0} won!!", m_Player1Name);
                     break;
-                case GameManager.eGameStatus.Player2Wins:
+                case GameManager.eGameStatus.NextPlayerWins:
                     if (m_twoPlayerMode)
                     {
                         Console.WriteLine("{0} won!!", m_Player2Name);
@@ -198,7 +200,7 @@ namespace EnglishCheckers
                 else
                 {
                     convertStringToCoordinates(o_MoveString, out sourceCoordinate, out destinationCoordinate);
-                    //gameStatus = io_GameManager.InitiateMove(sourceCoordinate, destinationCoordinate);
+                    gameStatus = io_GameManager.InitiateMove(sourceCoordinate, destinationCoordinate);
                 }
             }
 

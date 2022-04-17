@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 namespace EnglishCheckers
 {
@@ -37,9 +38,9 @@ namespace EnglishCheckers
 
         private void setupRow(int i_Row, Coin.eCoinType i_CoinType)
         {
+            setRowCoordinates(i_Row);
             for(int i = 0; i < m_BoardSize; i++)
             {
-                setRowCoordinates(i_Row);
                 if(isACoinInitialSpot(i_Row, i))
                 {
                     m_GameBoard[i_Row, i].Coin = new Coin(i_CoinType);
@@ -68,7 +69,26 @@ namespace EnglishCheckers
                 return m_BoardSize;
             }
         }
+        public void GetCoordinateToCoinDictionaries(out Dictionary<Coordinate,Coin> o_Player1Coins, out Dictionary<Coordinate, Coin> o_Player2Coins)
+        {
+            o_Player1Coins = new Dictionary<Coordinate, Coin>();
+            o_Player2Coins = new Dictionary<Coordinate, Coin>();
 
+            foreach (Square square in m_GameBoard)
+            {
+                if(square.Coin != null)
+                {
+                    if(square.Coin.Type == Coin.eCoinType.Player1Coin)
+                    {
+                        o_Player1Coins.Add(square.Coordinate,square.Coin);
+                    }
+                    else
+                    {
+                        o_Player2Coins.Add(square.Coordinate,square.Coin);
+                    }
+                }
+            }
+        }
         public Square GetSquare(Coordinate i_Coordinate)
         {
             return m_GameBoard[i_Coordinate.Row, i_Coordinate.Column];
@@ -91,7 +111,7 @@ namespace EnglishCheckers
                 {
                     diagonalCoordinates.Add(new Coordinate(nextRow, i_Coordinate.Column - 1));
                 }
-                else if (i_Coordinate.Column + 1 < m_BoardSize)
+                if (i_Coordinate.Column + 1 < m_BoardSize)
                 {
                     diagonalCoordinates.Add(new Coordinate(nextRow, i_Coordinate.Column + 1));
                 }
