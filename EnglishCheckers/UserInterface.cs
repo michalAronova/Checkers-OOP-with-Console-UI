@@ -5,13 +5,13 @@ namespace EnglishCheckers
 {
     public class UserInterface
     {
-        private string m_Player1Name = null;
-        private string m_Player2Name = null;
-        private bool m_twoPlayerMode = !true;
-        private readonly char r_Player1Coin = 'X';
-        private readonly char r_Player2Coin = 'O';
-        private readonly char r_Player1King = 'K';
-        private readonly char r_Player2King = 'U';
+        private string m_Player1Name = null;                    //GETTER FROM GAMEMANAGER.PLAYER
+        private string m_Player2Name = null;                    //GETTER FROM GAMEMANAGER.PLAYER     
+        private bool m_twoPlayerMode = !true;                   //GETTER FROM GAMEMANAGER
+        private const char r_Player1Coin = 'X';
+        private const char r_Player2Coin = 'O';
+        private const char r_Player1King = 'K';
+        private const char r_Player2King = 'U';
 
         public void InitializeGame()
         {
@@ -20,38 +20,39 @@ namespace EnglishCheckers
             GameManager gameManager = null;
 
             Console.WriteLine("Welcome to English Checkers!");
-            m_Player1Name = getValidName();
+            m_Player1Name = getValidName();                                          //SETTER TO GAMEMANAGER.PLAYER    
             boardSize = getBoardSize();
             m_twoPlayerMode = getGameMode();
-            m_Player2Name = m_twoPlayerMode ? getValidName() : "Computer";
+            m_Player2Name = m_twoPlayerMode ? getValidName() : "Computer";           //SETTER TO GAMEMANAGER.PLAYER
             gameManager = new GameManager(boardSize, m_twoPlayerMode);
             while (!exitGame)
             {
-                RunGame(gameManager);
-                exitGame = exitGameOrContinue();
+                runGame(gameManager);
                 //initilize game from gamemanager
+                exitGame = shouldExitGame();
             }
+
             Console.WriteLine("Goodbye and Thank you for playing :)");
         }
 
-        private void RunGame(GameManager io_GameManager)
+        private void runGame(GameManager io_GameManager)
         {
             GameManager.eGameStatus eGameStatus = GameManager.eGameStatus.ContinueGame;
             StringBuilder previousMove = new StringBuilder();
-            bool isPlayer1sTurn = !true;
+            bool isPlayer1sTurn = !true;        //NO NEED, GETTER FROM GM
 
             while (eGameStatus == GameManager.eGameStatus.ContinueGame)
             {
-                isPlayer1sTurn = !isPlayer1sTurn;
+                isPlayer1sTurn = !isPlayer1sTurn; //NO NEED, GETTER FROM GM
                 printBoard(io_GameManager.GameBoard);
                 printGameState(isPlayer1sTurn, previousMove);
+                previousMove.Clear();
                 eGameStatus = getAndInitiateMove(io_GameManager, previousMove, isPlayer1sTurn);
                 while (eGameStatus == GameManager.eGameStatus.InvalidMove)
                 {
                     eGameStatus = getAndInitiateMove(io_GameManager, previousMove, isPlayer1sTurn);
                 }
 
-                Console.ReadLine(); //REMOVE LATER
                 //sleep 3 secs?? maybe in the start of the block
                 //clear screen
             }
@@ -69,7 +70,7 @@ namespace EnglishCheckers
             printLowerBound(i_GameBoard.Size);
             for (int i = 0; i < i_GameBoard.Size; i++)
             {
-                correspondingStringToRow = rowToString(i_GameBoard, i);
+                correspondingStringToRow = createRowToString(i_GameBoard, i);
                 Console.WriteLine(" {0} |{1}", row, correspondingStringToRow);
                 printLowerBound(i_GameBoard.Size);
                 row++;
@@ -78,22 +79,22 @@ namespace EnglishCheckers
             ///////////////////clear screen
         }
 
-        private void printGameState(bool i_IsPlayer1sTurn, StringBuilder io_PreviousMove)
+        private void printGameState(bool i_IsPlayer1sTurn, StringBuilder i_PreviousMove)
         {
             string currentPlayerName = i_IsPlayer1sTurn ? m_Player1Name : m_Player2Name;
             string previousPlayerName = i_IsPlayer1sTurn ? m_Player2Name : m_Player1Name;
             char currentPlayerCoin = i_IsPlayer1sTurn ? r_Player1Coin : r_Player2Coin;
             char previousPlayerCoin = i_IsPlayer1sTurn ? r_Player2Coin : r_Player1Coin;
 
-            if (io_PreviousMove.Length != 0)
+            if (i_PreviousMove.Length != 0)
             {
-                Console.WriteLine(string.Format("{0}'s move was ({1}): {2}", previousPlayerName, previousPlayerCoin, io_PreviousMove));
+                Console.WriteLine(string.Format("{0}'s move was ({1}): {2}", previousPlayerName, previousPlayerCoin, i_PreviousMove));
             }
 
             Console.WriteLine(string.Format("{0}'s turn ({1}):", currentPlayerName, currentPlayerCoin));
         }
 
-        private string rowToString(Board i_GameBoard, int i_Row)
+        private string createRowToString(Board i_GameBoard, int i_Row)
         {
             string rowToString = null;
             Coordinate coordinate = new Coordinate(i_Row, 0);
@@ -157,9 +158,9 @@ namespace EnglishCheckers
             Console.WriteLine(lowerBound);
         }
 
-        private void printGameResult(GameManager.eGameStatus i_eGameStatus)
+        private void printGameResult(GameManager.eGameStatus i_EGameStatus)
         {
-            switch (i_eGameStatus)
+            switch (i_EGameStatus)
             {
                 case GameManager.eGameStatus.ActivePlayerWins:
                     Console.WriteLine("{0} won!!", m_Player1Name);
@@ -185,6 +186,7 @@ namespace EnglishCheckers
             GameManager.eGameStatus gameStatus = 0;
             Coordinate sourceCoordinate = new Coordinate();
             Coordinate destinationCoordinate = new Coordinate();
+            bool didCurrentPlayerQuit = !true;
 
             if (!m_twoPlayerMode && !i_IsPlayer1sTurn)
             {
@@ -193,7 +195,8 @@ namespace EnglishCheckers
             }
             else
             {
-                if (getValidMoveAndReturIfQuit(o_MoveString, io_GameManager.GameBoard.Size))
+                didCurrentPlayerQuit = getValidMoveAndReturIfQuit(o_MoveString, io_GameManager.GameBoard.Size);
+                if (didCurrentPlayerQuit)
                 {
                     //gameStatus =  gameManager.player quit..
                 }
@@ -368,14 +371,14 @@ namespace EnglishCheckers
             return (char)('a' + i_Row);
         }
 
-        private bool exitGameOrContinue()
+        private bool shouldExitGame()
         {
-            int input;
+            string input;
             bool exitGame = !true;
 
-            System.Console.WriteLine("Press any key to continue, or ESC to Exit game");
-            input = Console.Read();
-            if (input == 27)
+            System.Console.WriteLine("Insert any key to continue, or Q to Exit game");
+            input = Console.ReadLine();
+            if (input.Equals("Q"))
             {
                 exitGame = true;
             }
