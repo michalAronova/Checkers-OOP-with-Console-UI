@@ -61,7 +61,7 @@ namespace EnglishCheckers
 
             if(isValidMove) 
             {
-                performMove(i_SourceCoordinate, i_DestinationCoordinate);
+                performMove(initiatedMove);
                 if(initiatedMove.IsJumpMove && activePlayersValidMoves.Exists(move => move.IsJumpMove))
                 {
                     activePlayersValidMoves = calculateMovesFrom(
@@ -84,10 +84,15 @@ namespace EnglishCheckers
             return postMoveGameStatus;
         }
 
-        private void performMove(Coordinate i_SourceCoordinate, Coordinate i_DestinationCoordinate)
+        private void performMove(Move i_InitiatedMove)
         {
-            m_Board.MoveCoin(i_SourceCoordinate, i_DestinationCoordinate);
-            m_ActivePlayer.UpdatePlayersCoins(i_SourceCoordinate, i_DestinationCoordinate);
+            m_Board.MoveCoin(i_InitiatedMove.Source, i_InitiatedMove.Destination);
+            m_ActivePlayer.UpdatePlayersCoins(i_InitiatedMove.Source, i_InitiatedMove.Destination);
+            if(i_InitiatedMove.IsJumpMove)
+            {
+                m_Board.RemoveCoin(i_InitiatedMove.CoordinateOfJumpedOverCoin);
+                m_NextPlayer.RemovePlayersAteCoin(i_InitiatedMove.CoordinateOfJumpedOverCoin);
+            }
         }
 
         private eGameStatus handleTurnTransfer()
@@ -128,15 +133,22 @@ namespace EnglishCheckers
 
         private void removeNoJumps(List<Move> i_Moves)
         {
+            List<Move> movesToRemove = new List<Move>();
+
             if(i_Moves.Exists(move => move.IsJumpMove))
             {
                 foreach(Move move in i_Moves)
                 {
                     if(!move.IsJumpMove)
                     {
-                        i_Moves.Remove(move);
+                        movesToRemove.Add(move);
                     }
                 }
+            }
+
+            foreach(Move move in movesToRemove)
+            {
+                i_Moves.Remove(move);
             }
         }
 
@@ -196,7 +208,7 @@ namespace EnglishCheckers
             {
                 if(m_Board.GetSquare(diagonalCoordinate).Coin == null)
                 {
-                    possibleMoves.Add(new Move(i_SourceCoordinate, diagonalCoordinate, i_Direction, !isAJumpMove));
+                    possibleMoves.Add(new Move(i_SourceCoordinate, diagonalCoordinate, i_Direction, !isAJumpMove, null));
                 }
                 else if(i_CoinToMove.Type != m_Board.GetSquare(diagonalCoordinate).Coin.Type)
                 {
@@ -206,7 +218,8 @@ namespace EnglishCheckers
                     {
                         if(m_Board.GetSquare(jumpCoordinate).Coin == null && isLeftMove == m_Board.checkIfLeftMove(diagonalCoordinate, jumpCoordinate))
                         {
-                            possibleMoves.Add(new Move(i_SourceCoordinate, jumpCoordinate, i_Direction, isAJumpMove));
+                            possibleMoves.Add(new Move(i_SourceCoordinate, jumpCoordinate, 
+                                                            i_Direction, isAJumpMove, diagonalCoordinate));
                         }
                     }
                 }

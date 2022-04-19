@@ -72,5 +72,10 @@ namespace EnglishCheckers
             m_PlayersCoins.Remove(i_SourceSquare);
             m_PlayersCoins.Add(i_DestinationSquare, movedCoin);
         }
+
+        public void RemovePlayersAteCoin(Coordinate i_CoinCoordinate)
+        {
+            m_PlayersCoins.Remove(i_CoinCoordinate);
+        }
     }
 }

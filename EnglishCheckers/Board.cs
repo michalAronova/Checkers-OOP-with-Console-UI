@@ -100,6 +100,10 @@ namespace EnglishCheckers
             SetSquare(i_DestinationCoordinate, movingCoin);
             SetSquare(i_SourceCoordinate, null);
         }
+        public void RemoveCoin(Coordinate i_CoinCoordinate)
+        {
+            SetSquare(i_CoinCoordinate, null);
+        }
 
         public List<Coordinate> GetDiagonalInDirection(Coordinate i_Coordinate, Player.eDirection i_Direction)
         {
