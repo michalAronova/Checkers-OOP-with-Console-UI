@@ -62,14 +62,23 @@ namespace EnglishCheckers
             if(isValidMove) 
             {
                 performMove(initiatedMove);
-                if(initiatedMove.IsJumpMove && activePlayersValidMoves.Exists(move => move.IsJumpMove))
+                //somewhere here (maybe inside perform move? maybe inside the methods inside it - in player maybe?)
+                //need to check if reached end - if yes make it a king!
+                if(initiatedMove.IsJumpMove)
                 {
                     activePlayersValidMoves = calculateMovesFrom(
                         i_DestinationCoordinate,
                         m_Board.GetSquare(i_DestinationCoordinate).Coin);
-                    m_NextMoveIsDoubleJump = true;
-                    m_LastMove = initiatedMove;
-                    postMoveGameStatus = eGameStatus.ContinueGame;
+                    if(activePlayersValidMoves.Exists(move => move.IsJumpMove))
+                    {
+                        m_NextMoveIsDoubleJump = true;
+                        m_LastMove = initiatedMove;
+                        postMoveGameStatus = eGameStatus.ContinueGame;
+                    }
+                    else
+                    {
+                        postMoveGameStatus = handleTurnTransfer();
+                    }
                 }
                 else
                 {
