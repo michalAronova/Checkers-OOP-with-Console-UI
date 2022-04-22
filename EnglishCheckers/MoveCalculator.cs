@@ -19,6 +19,7 @@ namespace EnglishCheckers
         {
             List<Move> allPossibleMoves = new List<Move>();
             List<Move> movesFromGivenCoin;
+
             foreach (KeyValuePair<Coordinate, Coin> coinCoordinate in i_PlayersCoins)
             {
                 movesFromGivenCoin = calculateMovesFrom(coinCoordinate.Key, coinCoordinate.Value);
@@ -36,37 +37,38 @@ namespace EnglishCheckers
         {
             List<Move> moves = new List<Move>();
             List<Move> kingMoves = null;
-            Player.eDirection coinsDirection = (i_CoinToMove.Type == r_ActivePlayer.CoinType)
+            eDirection coinsDirection = (i_CoinToMove.Type == r_ActivePlayer.CoinType)
                                                    ? r_ActivePlayer.Direction
                                                    : r_NextPlayer.Direction;
             if (i_CoinToMove.IsKing)
             {
-                if (coinsDirection == Player.eDirection.Down)
+                if (coinsDirection == eDirection.Down)
                 {
-                    kingMoves = calculateMovesByDirection(i_CoinToMove, i_SourceCoordinate, Player.eDirection.Up);
+                    kingMoves = calculateMovesByDirection(i_CoinToMove, i_SourceCoordinate, eDirection.Up);
                 }
                 else
                 {
-                    kingMoves = calculateMovesByDirection(i_CoinToMove, i_SourceCoordinate, Player.eDirection.Down);
+                    kingMoves = calculateMovesByDirection(i_CoinToMove, i_SourceCoordinate, eDirection.Down);
                 }
             }
 
             moves = calculateMovesByDirection(i_CoinToMove, i_SourceCoordinate, coinsDirection);
-
             if (kingMoves != null)
             {
                 kingMoves.ForEach(move => moves.Add(move));
             }
+
             return moves;
         }
 
-        internal List<Move> calculateMovesByDirection(Coin i_CoinToMove, Coordinate i_SourceCoordinate, Player.eDirection i_Direction)
+        internal List<Move> calculateMovesByDirection(Coin i_CoinToMove, Coordinate i_SourceCoordinate, eDirection i_Direction)
         {
             List<Coordinate> possibleDiagonalCoordinates = r_Board.GetDiagonalInDirection(i_SourceCoordinate, i_Direction);
             bool isAJumpMove = true;
             bool isLeftMove;
             List<Move> possibleMoves = new List<Move>();
             List<Coordinate> possibleJumps = null;
+
             foreach (Coordinate diagonalCoordinate in possibleDiagonalCoordinates)
             {
                 if (r_Board.GetSquare(diagonalCoordinate).Coin == null)
@@ -87,8 +89,10 @@ namespace EnglishCheckers
                     }
                 }
             }
+
             return possibleMoves;
         }
+
         internal void removeNoJumps(List<Move> i_Moves)
         {
             List<Move> movesToRemove = new List<Move>();
@@ -109,10 +113,13 @@ namespace EnglishCheckers
                 i_Moves.Remove(move);
             }
         }
+
         internal List<Move> calculateJumpsOnlyFrom(Coordinate i_GivenDestination)
         {
             List<Move> JumpsFromCoordinate = calculateMovesFrom(i_GivenDestination, r_Board.GetSquare(i_GivenDestination).Coin);
+
             removeNoJumps(JumpsFromCoordinate);
+
             return JumpsFromCoordinate;
         }
     }

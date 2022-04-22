@@ -8,14 +8,6 @@ namespace EnglishCheckers
         private Board m_Board = null;
         private Player m_ActivePlayer;
         private Player m_NextPlayer;
-        public enum eGameStatus
-        {
-            ContinueGame,
-            ActivePlayerWins,
-            NextPlayerWins,
-            InvalidMove,
-            Tie,
-        }
         private Move m_LastMove;
         private bool m_NextMoveIsDoubleJump;
 
@@ -23,10 +15,11 @@ namespace EnglishCheckers
         {
             Dictionary<Coordinate, Coin> player1Coins;
             Dictionary<Coordinate, Coin> player2Coins;
+
             m_Board = new Board(i_BoardSize);
             m_Board.GetCoordinateToCoinDictionaries(out player1Coins, out player2Coins);
-            m_ActivePlayer = new Player(Player.eDirection.Up, Coin.eCoinType.Player1Coin, player1Coins);
-            m_NextPlayer = new Player(Player.eDirection.Down, Coin.eCoinType.Player2Coin, player2Coins);
+            m_ActivePlayer = new Player(eDirection.Up, eCoinType.Player1Coin, player1Coins);
+            m_NextPlayer = new Player(eDirection.Down, eCoinType.Player2Coin, player2Coins);
             m_NextPlayer.IsHumanPlayer = i_IsHumanPlayer;
         }
 
@@ -56,7 +49,6 @@ namespace EnglishCheckers
             
             initiatedMove = activePlayersValidMoves.Find(move => move.Source.Equals(i_SourceCoordinate) && move.Destination.Equals(i_DestinationCoordinate));
             isValidMove = initiatedMove != null;
-
             if(isValidMove) 
             {
                 performMove(initiatedMove);
@@ -88,11 +80,10 @@ namespace EnglishCheckers
             eGameStatus postMoveGameStatus;
             List<Move> activePlayersValidMoves;
             List<Move> nextPlayersValidMoves;
-            m_NextMoveIsDoubleJump = false;
 
+            m_NextMoveIsDoubleJump = false;
             swapPlayers(ref m_ActivePlayer, ref m_NextPlayer);
             nextPlayersValidMoves = calculateMovesForAllPlayersCoins(m_NextPlayer.PlayersCoins);
-
             if (nextPlayersValidMoves.Count == 0)
             {
                 activePlayersValidMoves = calculateMovesForAllPlayersCoins(m_ActivePlayer.PlayersCoins);
@@ -112,10 +103,12 @@ namespace EnglishCheckers
 
             return postMoveGameStatus;
         }
+
         private eGameStatus checkForDoubleJumpAndHandleTurnTransfer(Move i_InitiatedMove)
         {
             List<Move> activePlayersValidMoves;
             eGameStatus postMoveGameStatus;
+
             if (i_InitiatedMove.IsJumpMove)
             {
                 activePlayersValidMoves = calculateMovesFrom(i_InitiatedMove.Destination, m_Board.GetSquare(i_InitiatedMove.Destination).Coin);
@@ -134,8 +127,10 @@ namespace EnglishCheckers
             {
                 postMoveGameStatus = handleTurnTransfer();
             }
+
             return postMoveGameStatus;
         }
+
         private void swapPlayers(ref Player i_Player1, ref Player i_Player2)
         {
             Player tempPlayer = i_Player1;
@@ -401,7 +396,9 @@ namespace EnglishCheckers
         private List<Move> calculateJumpsOnlyFrom(Coordinate i_GivenDestination)
         {
             List<Move> JumpsFromCoordinate = calculateMovesFrom(i_GivenDestination, m_Board.GetSquare(i_GivenDestination).Coin);
+
             removeNoJumps(JumpsFromCoordinate);
+
             return JumpsFromCoordinate;
         }
         
@@ -409,6 +406,7 @@ namespace EnglishCheckers
         {
             List<Move> allPossibleMoves = new List<Move>();
             List<Move> movesFromGivenCoin;
+
             foreach (KeyValuePair<Coordinate, Coin> coinCoordinate in i_PlayersCoins)
             {
                 movesFromGivenCoin = calculateMovesFrom(coinCoordinate.Key, coinCoordinate.Value);
@@ -425,37 +423,38 @@ namespace EnglishCheckers
         {
             List<Move> moves = new List<Move>();
             List<Move> kingMoves = null;
-            Player.eDirection coinsDirection = (i_CoinToMove.Type == m_ActivePlayer.CoinType)
+            eDirection coinsDirection = (i_CoinToMove.Type == m_ActivePlayer.CoinType)
                                                    ? m_ActivePlayer.Direction
                                                    : m_NextPlayer.Direction;
             if(i_CoinToMove.IsKing)
             {
-                if(coinsDirection == Player.eDirection.Down)
+                if(coinsDirection == eDirection.Down)
                 {
-                    kingMoves = calculateMovesByDirection(i_CoinToMove, i_SourceCoordinate, Player.eDirection.Up);
+                    kingMoves = calculateMovesByDirection(i_CoinToMove, i_SourceCoordinate, eDirection.Up);
                 }
                 else
                 {
-                    kingMoves = calculateMovesByDirection(i_CoinToMove, i_SourceCoordinate, Player.eDirection.Down);
+                    kingMoves = calculateMovesByDirection(i_CoinToMove, i_SourceCoordinate, eDirection.Down);
                 }
             }
-        
+
             moves = calculateMovesByDirection(i_CoinToMove, i_SourceCoordinate, coinsDirection);
-        
             if(kingMoves != null)
             {
                 kingMoves.ForEach(move => moves.Add(move));
             }
+
             return moves;
         }
         
-        private List<Move> calculateMovesByDirection(Coin i_CoinToMove, Coordinate i_SourceCoordinate, Player.eDirection i_Direction)
+        private List<Move> calculateMovesByDirection(Coin i_CoinToMove, Coordinate i_SourceCoordinate, eDirection i_Direction)
         {
             List<Coordinate> possibleDiagonalCoordinates = m_Board.GetDiagonalInDirection(i_SourceCoordinate, i_Direction);
             bool isAJumpMove = true;
             bool isLeftMove;
             List<Move> possibleMoves = new List<Move>();
             List<Coordinate> possibleJumps = null;
+
             foreach (Coordinate diagonalCoordinate in possibleDiagonalCoordinates)
             {
                 if(m_Board.GetSquare(diagonalCoordinate).Coin == null)
@@ -476,6 +475,7 @@ namespace EnglishCheckers
                     }
                 }
             }
+
             return possibleMoves;
         }
     }

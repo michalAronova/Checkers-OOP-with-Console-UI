@@ -5,18 +5,14 @@ namespace EnglishCheckers
 {
     public class Coin
     {
-        public enum eCoinType
-        {
-            Player1Coin,
-            Player2Coin,
-        }
-
-        private eCoinType m_CoinType; //default?
+        private eCoinType m_CoinType;
         private bool m_IsKing = false;
+
         public Coin(eCoinType i_CoinType)
         {
             m_CoinType = i_CoinType;
         }
+
         public eCoinType Type
         {
             get
@@ -24,6 +20,7 @@ namespace EnglishCheckers
                 return m_CoinType;
             }
         }
+
         public bool IsKing
         {
             get

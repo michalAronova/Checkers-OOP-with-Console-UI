@@ -10,6 +10,7 @@
             m_Row = i_Row;
             m_Column = i_Column;
         }
+
         public int Row
         {
             get

@@ -4,6 +4,7 @@
     {
         private Coordinate m_Coordinate;
         private Coin m_Coin = null;
+
         public Coordinate Coordinate
         {
             get
@@ -15,6 +16,7 @@
                 m_Coordinate = value;
             }
         }
+
         public Coin Coin
         {
             get

@@ -4,11 +4,11 @@
     {
         private Coordinate m_SourceCoordinate;
         private Coordinate m_DestinationCoordinate;
-        private Player.eDirection m_Direction;
+        private eDirection m_Direction;
         private bool m_IsJumpMove;
         private Coordinate? m_CoordinateOfJumpedOverCoin;
 
-        public Move(Coordinate i_SourceCoordinate, Coordinate i_DestinationCoordinate, Player.eDirection i_Direction, bool i_IsJumpMove, Coordinate? i_JumpedOverCoordinate)
+        public Move(Coordinate i_SourceCoordinate, Coordinate i_DestinationCoordinate, eDirection i_Direction, bool i_IsJumpMove, Coordinate? i_JumpedOverCoordinate)
         {
             m_SourceCoordinate = i_SourceCoordinate;
             m_DestinationCoordinate = i_DestinationCoordinate;
@@ -19,6 +19,7 @@
                 m_CoordinateOfJumpedOverCoin = i_JumpedOverCoordinate;
             }
         }
+
         public Coordinate Source
         {
             get
@@ -30,6 +31,7 @@
                 m_SourceCoordinate = value;
             }
         }
+
         public Coordinate Destination
         {
             get
@@ -41,7 +43,8 @@
                 m_DestinationCoordinate = value;
             }
         }
-        public Player.eDirection Direction
+
+        public eDirection Direction
         {
             get
             {
@@ -52,6 +55,7 @@
                 m_Direction = value;
             }
         }
+
         public bool IsJumpMove
         {
             get
@@ -63,6 +67,7 @@
                 m_IsJumpMove = value;
             }
         }
+
         public Coordinate CoordinateOfJumpedOverCoin
         {
             get
