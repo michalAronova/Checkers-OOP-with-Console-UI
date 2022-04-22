@@ -37,19 +37,19 @@ namespace EnglishCheckers
 
         private void runGame(GameManager io_GameManager)
         {
-            GameManager.eGameStatus eGameStatus = GameManager.eGameStatus.ContinueGame;
+            eGameStatus eGameStatus = eGameStatus.ContinueGame;
             StringBuilder previousMove = new StringBuilder();
             bool isPlayer1sTurn = !true;        //NO NEED, GETTER FROM GM
             const bool v_ValidMove = true;
 
-            while (eGameStatus == GameManager.eGameStatus.ContinueGame)
+            while (eGameStatus == eGameStatus.ContinueGame)
             {
                 isPlayer1sTurn = !isPlayer1sTurn; //NO NEED, GETTER FROM GM
                 printBoard(io_GameManager.GameBoard);
                 printGameState(isPlayer1sTurn, previousMove, eGameStatus);
                 previousMove.Clear();
                 eGameStatus = getAndInitiateMove(io_GameManager, previousMove, isPlayer1sTurn);
-                while (eGameStatus == GameManager.eGameStatus.InvalidMove)
+                while (eGameStatus == eGameStatus.InvalidMove)
                 {
                     invalidInputMessage(!v_ValidMove);
                     eGameStatus = getAndInitiateMove(io_GameManager, previousMove, isPlayer1sTurn);
@@ -81,7 +81,7 @@ namespace EnglishCheckers
             ///////////////////clear screen
         }
 
-        private void printGameState(bool i_IsPlayer1sTurn, StringBuilder i_PreviousMove, GameManager.eGameStatus i_EGameStatus)
+        private void printGameState(bool i_IsPlayer1sTurn, StringBuilder i_PreviousMove, eGameStatus i_EGameStatus)
         {
             string currentPlayerName = i_IsPlayer1sTurn ? m_Player1Name : m_Player2Name;
             string previousPlayerName = i_IsPlayer1sTurn ? m_Player2Name : m_Player1Name;
@@ -100,7 +100,7 @@ namespace EnglishCheckers
         {
             string rowToString = null;
             Coordinate coordinate = new Coordinate(i_Row, 0);
-            Coin.eCoinType currentCoinType;
+            eCoinType currentCoinType;
             bool isCurrentCoinKing = !true;
 
             for (int i = 0; i < i_GameBoard.Size; i++)
@@ -114,7 +114,7 @@ namespace EnglishCheckers
                     currentCoinType = i_GameBoard.GetSquare(coordinate).Coin.Type;
                     isCurrentCoinKing = i_GameBoard.GetSquare(coordinate).Coin.IsKing;
                     rowToString += " ";
-                    if (currentCoinType == Coin.eCoinType.Player1Coin)
+                    if (currentCoinType == eCoinType.Player1Coin)
                     {
                         rowToString += isCurrentCoinKing ? r_Player1King : r_Player1Coin;
                     }
@@ -160,14 +160,14 @@ namespace EnglishCheckers
             Console.WriteLine(lowerBound);
         }
 
-        private void printGameResult(GameManager.eGameStatus i_EGameStatus)
+        private void printGameResult(eGameStatus i_EGameStatus)
         {
             switch (i_EGameStatus)
             {
-                case GameManager.eGameStatus.ActivePlayerWins:
+                case eGameStatus.ActivePlayerWins:
                     Console.WriteLine("{0} won!!", m_Player1Name);
                     break;
-                case GameManager.eGameStatus.NextPlayerWins:
+                case eGameStatus.NextPlayerWins:
                     if (m_twoPlayerMode)
                     {
                         Console.WriteLine("{0} won!!", m_Player2Name);
@@ -177,15 +177,15 @@ namespace EnglishCheckers
                         Console.WriteLine("The computer won!!");
                     }
                     break;
-                case GameManager.eGameStatus.Tie:
+                case eGameStatus.Tie:
                     Console.WriteLine("It's a tie!");
                     break;
             }
         }
 
-        private GameManager.eGameStatus getAndInitiateMove(GameManager io_GameManager, StringBuilder o_MoveString, bool i_IsPlayer1sTurn)
+        private eGameStatus getAndInitiateMove(GameManager io_GameManager, StringBuilder o_MoveString, bool i_IsPlayer1sTurn)
         {
-            GameManager.eGameStatus gameStatus = 0;
+            eGameStatus gameStatus = 0;
             Coordinate sourceCoordinate = new Coordinate();
             Coordinate destinationCoordinate = new Coordinate();
             bool didCurrentPlayerQuit = !true;

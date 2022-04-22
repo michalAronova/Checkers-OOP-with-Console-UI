@@ -7,14 +7,6 @@ namespace EnglishCheckers
         private Board m_Board = null;
         private Player m_ActivePlayer;
         private Player m_NextPlayer;
-        public enum eGameStatus
-        {
-            ContinueGame,
-            ActivePlayerWins,
-            NextPlayerWins,
-            InvalidMove,
-            Tie,
-        }
         private Move m_LastMove;
         private bool m_NextMoveIsDoubleJump;
 
@@ -24,8 +16,8 @@ namespace EnglishCheckers
             Dictionary<Coordinate, Coin> player2Coins;
             m_Board = new Board(i_BoardSize);
             m_Board.GetCoordinateToCoinDictionaries(out player1Coins, out player2Coins);
-            m_ActivePlayer = new Player(Player.eDirection.Up, Coin.eCoinType.Player1Coin, player1Coins);
-            m_NextPlayer = new Player(Player.eDirection.Down, Coin.eCoinType.Player2Coin, player2Coins);
+            m_ActivePlayer = new Player(Player.eDirection.Up, eCoinType.Player1Coin, player1Coins);
+            m_NextPlayer = new Player(Player.eDirection.Down, eCoinType.Player2Coin, player2Coins);
             m_NextPlayer.IsHumanPlayer = i_IsHumanPlayer;
         }
 

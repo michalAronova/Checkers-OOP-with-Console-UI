@@ -22,11 +22,11 @@ namespace EnglishCheckers
             {
                 if(i < numberOfInitialPlayerRows)
                 {
-                    setupRow(i, Coin.eCoinType.Player2Coin);
+                    setupRow(i, eCoinType.Player2Coin);
                 }
                 else if(i >= m_BoardSize - numberOfInitialPlayerRows)
                 {
-                    setupRow(i, Coin.eCoinType.Player1Coin);
+                    setupRow(i, eCoinType.Player1Coin);
                 }
                 else
                 {
@@ -35,7 +35,7 @@ namespace EnglishCheckers
             }
         }
 
-        private void setupRow(int i_Row, Coin.eCoinType i_CoinType)
+        private void setupRow(int i_Row, eCoinType i_CoinType)
         {
             setRowCoordinates(i_Row);
             for(int i = 0; i < m_BoardSize; i++)
@@ -77,7 +77,7 @@ namespace EnglishCheckers
             {
                 if(square.Coin != null)
                 {
-                    if(square.Coin.Type == Coin.eCoinType.Player1Coin)
+                    if(square.Coin.Type == eCoinType.Player1Coin)
                     {
                         o_Player1Coins.Add(square.Coordinate,square.Coin);
                     }
