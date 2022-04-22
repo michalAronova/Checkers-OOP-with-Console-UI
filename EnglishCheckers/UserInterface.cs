@@ -45,7 +45,7 @@ namespace EnglishCheckers
             {
                 isPlayer1sTurn = !isPlayer1sTurn; //NO NEED, GETTER FROM GM
                 printBoard(io_GameManager.GameBoard);
-                printGameState(isPlayer1sTurn, previousMove);
+                printGameState(isPlayer1sTurn, previousMove, eGameStatus);
                 previousMove.Clear();
                 eGameStatus = getAndInitiateMove(io_GameManager, previousMove, isPlayer1sTurn);
                 while (eGameStatus == GameManager.eGameStatus.InvalidMove)
@@ -79,7 +79,7 @@ namespace EnglishCheckers
             ///////////////////clear screen
         }
 
-        private void printGameState(bool i_IsPlayer1sTurn, StringBuilder i_PreviousMove)
+        private void printGameState(bool i_IsPlayer1sTurn, StringBuilder i_PreviousMove, GameManager.eGameStatus i_EGameStatus)
         {
             string currentPlayerName = i_IsPlayer1sTurn ? m_Player1Name : m_Player2Name;
             string previousPlayerName = i_IsPlayer1sTurn ? m_Player2Name : m_Player1Name;
@@ -243,6 +243,7 @@ namespace EnglishCheckers
 
             while (!isValidMove)
             {
+                o_MoveString.Clear();
                 o_MoveString.Insert(0, Console.ReadLine());
                 if (o_MoveString.Length == 1 && o_MoveString[0] == 'Q')
                 {
