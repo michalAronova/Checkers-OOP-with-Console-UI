@@ -192,7 +192,7 @@ namespace EnglishCheckers
 
             if (!m_twoPlayerMode && !i_IsPlayer1sTurn)
             {
-                // gameStatus = io_GameManager.InitiateComputerMove(out sourceCoordinate, out destinationCoordinate);
+                gameStatus = io_GameManager.InitiateComputerMove(out sourceCoordinate, out destinationCoordinate);
                 convertCoordinatesToMoveString(o_MoveString, sourceCoordinate, destinationCoordinate);
             }
             else
