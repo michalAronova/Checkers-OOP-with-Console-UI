@@ -24,8 +24,8 @@ namespace EnglishCheckers
             Dictionary<Coordinate, Coin> player2Coins;
             m_Board = new Board(i_BoardSize);
             m_Board.GetCoordinateToCoinDictionaries(out player1Coins, out player2Coins);
-            m_ActivePlayer = new Player(Player.eDirection.Down, Coin.eCoinType.Player1Coin, player1Coins);
-            m_NextPlayer = new Player(Player.eDirection.Up, Coin.eCoinType.Player2Coin, player2Coins);
+            m_ActivePlayer = new Player(Player.eDirection.Up, Coin.eCoinType.Player1Coin, player1Coins);
+            m_NextPlayer = new Player(Player.eDirection.Down, Coin.eCoinType.Player2Coin, player2Coins);
             m_NextPlayer.IsHumanPlayer = i_IsHumanPlayer;
         }
 
@@ -39,6 +39,7 @@ namespace EnglishCheckers
 
         public eGameStatus InitiateMove(Coordinate i_SourceCoordinate, Coordinate i_DestinationCoordinate)
         {
+            MoveCalculator moveCalculator = new MoveCalculator(m_Board, m_ActivePlayer, m_NextPlayer);
             List<Move> activePlayersValidMoves;
             Move initiatedMove;
             bool isValidMove;
@@ -46,14 +47,11 @@ namespace EnglishCheckers
 
             if (m_NextMoveIsDoubleJump)
             {
-                activePlayersValidMoves = calculateMovesFrom(
-                    m_LastMove.Destination,
-                    m_Board.GetSquare(m_LastMove.Destination).Coin);
-                removeNoJumps(activePlayersValidMoves);
+                activePlayersValidMoves = moveCalculator.calculateJumpsOnlyFrom(m_LastMove.Destination);
             }
             else
             {
-                activePlayersValidMoves = calculateMovesForAllPlayersCoins(m_ActivePlayer.PlayersCoins);
+                activePlayersValidMoves = moveCalculator.calculateMovesForAllPlayersCoins(m_ActivePlayer.PlayersCoins);
             }
             
             initiatedMove = activePlayersValidMoves.Find(move => move.Source.Equals(i_SourceCoordinate) && move.Destination.Equals(i_DestinationCoordinate));
@@ -66,7 +64,7 @@ namespace EnglishCheckers
                 //need to check if reached end - if yes make it a king!
                 if(initiatedMove.IsJumpMove)
                 {
-                    activePlayersValidMoves = calculateMovesFrom(
+                    activePlayersValidMoves = moveCalculator.calculateMovesFrom(
                         i_DestinationCoordinate,
                         m_Board.GetSquare(i_DestinationCoordinate).Coin);
                     if(activePlayersValidMoves.Exists(move => move.IsJumpMove))
@@ -77,12 +75,12 @@ namespace EnglishCheckers
                     }
                     else
                     {
-                        postMoveGameStatus = handleTurnTransfer();
+                        postMoveGameStatus = handleTurnTransfer(moveCalculator);
                     }
                 }
                 else
                 {
-                    postMoveGameStatus = handleTurnTransfer();
+                    postMoveGameStatus = handleTurnTransfer(moveCalculator);
                 }
             }
             else
@@ -104,7 +102,7 @@ namespace EnglishCheckers
             }
         }
 
-        private eGameStatus handleTurnTransfer()
+        private eGameStatus handleTurnTransfer(MoveCalculator i_MoveCalculator)
         {
             eGameStatus postMoveGameStatus;
             List<Move> activePlayersValidMoves;
@@ -112,11 +110,11 @@ namespace EnglishCheckers
             m_NextMoveIsDoubleJump = false;
 
             swapPlayers(ref m_ActivePlayer, ref m_NextPlayer);
-            nextPlayersValidMoves = calculateMovesForAllPlayersCoins(m_NextPlayer.PlayersCoins);
+            nextPlayersValidMoves = i_MoveCalculator.calculateMovesForAllPlayersCoins(m_NextPlayer.PlayersCoins);
 
             if (nextPlayersValidMoves.Count == 0)
             {
-                activePlayersValidMoves = calculateMovesForAllPlayersCoins(m_ActivePlayer.PlayersCoins);
+                activePlayersValidMoves = i_MoveCalculator.calculateMovesForAllPlayersCoins(m_ActivePlayer.PlayersCoins);
                 if (activePlayersValidMoves.Count == 0)
                 {
                     postMoveGameStatus = eGameStatus.Tie;
@@ -140,217 +138,107 @@ namespace EnglishCheckers
             i_Player2 = tempPlayer;
         }
 
-        private void removeNoJumps(List<Move> i_Moves)
-        {
-            List<Move> movesToRemove = new List<Move>();
-
-            if(i_Moves.Exists(move => move.IsJumpMove))
-            {
-                foreach(Move move in i_Moves)
-                {
-                    if(!move.IsJumpMove)
-                    {
-                        movesToRemove.Add(move);
-                    }
-                }
-            }
-
-            foreach(Move move in movesToRemove)
-            {
-                i_Moves.Remove(move);
-            }
-        }
-
-        private List<Move> calculateMovesForAllPlayersCoins(Dictionary<Coordinate, Coin> i_PlayersCoins)
-        {
-            List<Move> allPossibleMoves = new List<Move>();
-            List<Move> movesFromGivenCoin;
-            foreach (KeyValuePair<Coordinate, Coin> coinCoordinate in i_PlayersCoins)
-            {
-                movesFromGivenCoin = calculateMovesFrom(coinCoordinate.Key, coinCoordinate.Value);
-                removeNoJumps(allPossibleMoves);    
-                if(movesFromGivenCoin.Count != 0)
-                {
-                    movesFromGivenCoin.ForEach(move => allPossibleMoves.Add(move));
-                }
-            }
-
-            return allPossibleMoves;
-        }
-
-        private List<Move> calculateMovesFrom(Coordinate i_SourceCoordinate, Coin i_CoinToMove)
-        {
-            List<Move> moves = new List<Move>();
-            List<Move> kingMoves = null;
-            Player.eDirection coinsDirection = (i_CoinToMove.Type == m_ActivePlayer.CoinType)
-                                                   ? m_ActivePlayer.Direction
-                                                   : m_NextPlayer.Direction;
-            if(i_CoinToMove.IsKing)
-            {
-                if(coinsDirection == Player.eDirection.Down)
-                {
-                    kingMoves = calculateMovesByDirection(i_CoinToMove, i_SourceCoordinate, Player.eDirection.Up);
-                }
-                else
-                {
-                    kingMoves = calculateMovesByDirection(i_CoinToMove, i_SourceCoordinate, Player.eDirection.Down);
-                }
-            }
-
-            moves = calculateMovesByDirection(i_CoinToMove, i_SourceCoordinate, coinsDirection);
-
-            if(kingMoves != null)
-            {
-                kingMoves.ForEach(move => moves.Add(move));
-            }
-            return moves;
-        }
-
-        private List<Move> calculateMovesByDirection(Coin i_CoinToMove, Coordinate i_SourceCoordinate, Player.eDirection i_Direction)
-        {
-            List<Coordinate> possibleDiagonalCoordinates = m_Board.GetDiagonalInDirection(i_SourceCoordinate, i_Direction);
-            bool isAJumpMove = true;
-            bool isLeftMove;
-            List<Move> possibleMoves = new List<Move>();
-            List<Coordinate> possibleJumps = null;
-            foreach (Coordinate diagonalCoordinate in possibleDiagonalCoordinates)
-            {
-                if(m_Board.GetSquare(diagonalCoordinate).Coin == null)
-                {
-                    possibleMoves.Add(new Move(i_SourceCoordinate, diagonalCoordinate, i_Direction, !isAJumpMove, null));
-                }
-                else if(i_CoinToMove.Type != m_Board.GetSquare(diagonalCoordinate).Coin.Type)
-                {
-                    isLeftMove = m_Board.checkIfLeftMove(i_SourceCoordinate, diagonalCoordinate);
-                    possibleJumps = m_Board.GetDiagonalInDirection(diagonalCoordinate, i_Direction);
-                    foreach(Coordinate jumpCoordinate in possibleJumps)
-                    {
-                        if(m_Board.GetSquare(jumpCoordinate).Coin == null && isLeftMove == m_Board.checkIfLeftMove(diagonalCoordinate, jumpCoordinate))
-                        {
-                            possibleMoves.Add(new Move(i_SourceCoordinate, jumpCoordinate, 
-                                                            i_Direction, isAJumpMove, diagonalCoordinate));
-                        }
-                    }
-                }
-            }
-            return possibleMoves;
-        }
-        ///private bool ValidateMove(Coordinate i_SourceCoordinate, Coordinate i_DestinationCoordinate)
+        ///private void removeNoJumps(List<Move> i_Moves)
         ///{
-        ///    bool isValidMove = true;
-        ///    if(checkIfInBorders(i_SourceCoordinate) && checkIfInBorders(i_DestinationCoordinate))
-        ///    {
+        ///    List<Move> movesToRemove = new List<Move>();
         ///
-        ///    }
-        ///    else
+        ///    if(i_Moves.Exists(move => move.IsJumpMove))
         ///    {
-        ///        
-        ///    }
-        ///    //check if valid logicaly, maybe player must move somewhere else
-        ///    //return result
-        ///    return isValidMove;
-        ///}
-
-        ///private bool checkIfInBorders(Coordinate i_Coordinate)
-        ///{
-        ///    return (i_Coordinate.Column >= 0 && i_Coordinate.Column < m_Board.Size)
-        ///           && (i_Coordinate.Row >= 0 && i_Coordinate.Row < m_Board.Size);
-        ///}
-
-        ///private bool checkIfLogicallyValid(Coordinate i_SourceCoordinate, Coordinate i_DestinationCoordinate, out bool o_AteARivalCoin)
-        ///{
-        ///    bool isLogicalMove = isValidSourceCoordination(i_SourceCoordinate);
-        ///    if(isLogicalMove && m_Board.GetSquare(i_DestinationCoordinate).Coin == null)
-        ///    {
-        ///        isLogicalMove = checkIfDiagonalMove(i_SourceCoordinate, i_DestinationCoordinate, out o_AteARivalCoin);
-        ///    }
-        ///    return isLogicalMove;
-        ///}
-        ///
-        ///private bool isValidSourceCoordination(Coordinate i_SourceCoordinate)
-        ///{
-        ///    bool isValidSource = (m_Board.GetSquare(i_SourceCoordinate).Coin == null);
-        ///    if(isValidSource)
-        ///    {
-        ///        isValidSource = (m_Board.GetSquare(i_SourceCoordinate).Coin.Type == m_ActivePlayer.CoinType);
-        ///    }
-        ///    return isValidSource;
-        ///}
-        ///
-        ///private bool checkIfDiagonalMove(Coordinate i_SourceCoordinate, Coordinate i_DestinationCoordinate, out bool o_AteARivalCoin)
-        ///{
-        ///    Coin movingCoin = m_Board.GetSquare(i_SourceCoordinate).Coin;
-        ///    bool isValidDiagonal = false;
-        ///    bool validDownward = checkIfDownwardDiagonal(i_SourceCoordinate,i_DestinationCoordinate, out o_AteARivalCoin);
-        ///    bool validUpward = checkIfUpwardDiagonal(i_SourceCoordinate, i_DestinationCoordinate, out o_AteARivalCoin);
-        ///
-        ///    if(movingCoin.IsKing)
-        ///    {
-        ///        isValidDiagonal = validUpward || validDownward;
-        ///    }
-        ///    else
-        ///    {
-        ///        if(m_ActivePlayer.Direction == Player.eDirection.Down)
+        ///        foreach(Move move in i_Moves)
         ///        {
-        ///            isValidDiagonal = validDownward;
+        ///            if(!move.IsJumpMove)
+        ///            {
+        ///                movesToRemove.Add(move);
+        ///            }
+        ///        }
+        ///    }
+        ///
+        ///    foreach(Move move in movesToRemove)
+        ///    {
+        ///        i_Moves.Remove(move);
+        ///    }
+        ///}
+        
+        ///private List<Move> calculateJumpsOnlyFrom(Coordinate i_GivenDestination)
+        ///{
+        ///    List<Move> JumpsFromCoordinate = calculateMovesFrom(i_GivenDestination, m_Board.GetSquare(i_GivenDestination).Coin);
+        ///    removeNoJumps(JumpsFromCoordinate);
+        ///    return JumpsFromCoordinate;
+        ///}
+        
+        ///private List<Move> calculateMovesForAllPlayersCoins(Dictionary<Coordinate, Coin> i_PlayersCoins)
+        ///{
+        ///    List<Move> allPossibleMoves = new List<Move>();
+        ///    List<Move> movesFromGivenCoin;
+        ///    foreach (KeyValuePair<Coordinate, Coin> coinCoordinate in i_PlayersCoins)
+        ///    {
+        ///        movesFromGivenCoin = calculateMovesFrom(coinCoordinate.Key, coinCoordinate.Value);
+        ///        removeNoJumps(allPossibleMoves);    
+        ///        if(movesFromGivenCoin.Count != 0)
+        ///        {
+        ///            movesFromGivenCoin.ForEach(move => allPossibleMoves.Add(move));
+        ///        }
+        ///    }
+        ///
+        ///    return allPossibleMoves;
+        ///}
+        
+        ///private List<Move> calculateMovesFrom(Coordinate i_SourceCoordinate, Coin i_CoinToMove)
+        ///{
+        ///    List<Move> moves = new List<Move>();
+        ///    List<Move> kingMoves = null;
+        ///    Player.eDirection coinsDirection = (i_CoinToMove.Type == m_ActivePlayer.CoinType)
+        ///                                           ? m_ActivePlayer.Direction
+        ///                                           : m_NextPlayer.Direction;
+        ///    if(i_CoinToMove.IsKing)
+        ///    {
+        ///        if(coinsDirection == Player.eDirection.Down)
+        ///        {
+        ///            kingMoves = calculateMovesByDirection(i_CoinToMove, i_SourceCoordinate, Player.eDirection.Up);
         ///        }
         ///        else
         ///        {
-        ///            isValidDiagonal = validUpward;
+        ///            kingMoves = calculateMovesByDirection(i_CoinToMove, i_SourceCoordinate, Player.eDirection.Down);
         ///        }
         ///    }
         ///
-        ///    return isValidDiagonal;
-        ///}
+        ///    moves = calculateMovesByDirection(i_CoinToMove, i_SourceCoordinate, coinsDirection);
         ///
-        ///private bool checkIfUpwardDiagonal(Coordinate i_SourceCoordinate, Coordinate i_DestinationCoordinate, out bool o_AteARivalCoin)
-        ///{
-        ///    o_AteARivalCoin = false;
-        ///    bool isUpwardsDiagonal = (i_SourceCoordinate.Row - 1 == i_DestinationCoordinate.Row) && 
-        ///                             (checkIfDiagonalColumn(i_SourceCoordinate.Column, i_DestinationCoordinate.Column, false));
-        ///    if(!isUpwardsDiagonal)
+        ///    if(kingMoves != null)
         ///    {
-        ///        isUpwardsDiagonal = (i_SourceCoordinate.Row - 2 == i_DestinationCoordinate.Row) &&
-        ///                            (checkIfDiagonalColumn(i_SourceCoordinate.Column, i_DestinationCoordinate.Column, true));
-        ///        if(isUpwardsDiagonal)
-        ///        {
-        ///            o_AteARivalCoin = isThereARivalCoinBetween(i_SourceCoordinate, i_DestinationCoordinate);
-        ///            isUpwardsDiagonal = o_AteARivalCoin;
-        ///        }
+        ///        kingMoves.ForEach(move => moves.Add(move));
         ///    }
-        ///    return isUpwardsDiagonal;
+        ///    return moves;
         ///}
-        ///private bool checkIfDownwardDiagonal(Coordinate i_SourceCoordinate, Coordinate i_DestinationCoordinate, out bool o_AteARivalCoin)
+        
+        ///private List<Move> calculateMovesByDirection(Coin i_CoinToMove, Coordinate i_SourceCoordinate, Player.eDirection i_Direction)
         ///{
-        ///    o_AteARivalCoin = false;
-        ///    bool isDownwardsDiagonal = (i_SourceCoordinate.Row + 1 == i_DestinationCoordinate.Row) &&
-        ///                             (checkIfDiagonalColumn(i_SourceCoordinate.Column, i_DestinationCoordinate.Column, false));
-        ///    if (!isDownwardsDiagonal)
+        ///    List<Coordinate> possibleDiagonalCoordinates = m_Board.GetDiagonalInDirection(i_SourceCoordinate, i_Direction);
+        ///    bool isAJumpMove = true;
+        ///    bool isLeftMove;
+        ///    List<Move> possibleMoves = new List<Move>();
+        ///    List<Coordinate> possibleJumps = null;
+        ///    foreach (Coordinate diagonalCoordinate in possibleDiagonalCoordinates)
         ///    {
-        ///        isDownwardsDiagonal = (i_SourceCoordinate.Row + 2 == i_DestinationCoordinate.Row) &&
-        ///                              (checkIfDiagonalColumn(i_SourceCoordinate.Column, i_DestinationCoordinate.Column, true));
-        ///        if (isDownwardsDiagonal)
+        ///        if(m_Board.GetSquare(diagonalCoordinate).Coin == null)
         ///        {
-        ///            o_AteARivalCoin = isThereARivalCoinBetween(i_SourceCoordinate, i_DestinationCoordinate);
-        ///            isDownwardsDiagonal = o_AteARivalCoin;
+        ///            possibleMoves.Add(new Move(i_SourceCoordinate, diagonalCoordinate, i_Direction, !isAJumpMove, null));
+        ///        }
+        ///        else if(i_CoinToMove.Type != m_Board.GetSquare(diagonalCoordinate).Coin.Type)
+        ///        {
+        ///            isLeftMove = m_Board.checkIfLeftMove(i_SourceCoordinate, diagonalCoordinate);
+        ///            possibleJumps = m_Board.GetDiagonalInDirection(diagonalCoordinate, i_Direction);
+        ///            foreach(Coordinate jumpCoordinate in possibleJumps)
+        ///            {
+        ///                if(m_Board.GetSquare(jumpCoordinate).Coin == null && isLeftMove == m_Board.checkIfLeftMove(diagonalCoordinate, jumpCoordinate))
+        ///                {
+        ///                    possibleMoves.Add(new Move(i_SourceCoordinate, jumpCoordinate, 
+        ///                                                    i_Direction, isAJumpMove, diagonalCoordinate));
+        ///                }
+        ///            }
         ///        }
         ///    }
-        ///    return isDownwardsDiagonal;
-        ///}
-        ///
-        ///private bool isThereARivalCoinBetween(Coordinate i_SourceCoordinate, Coordinate i_DestinationCoordinate)
-        ///{
-        ///    
-        ///}
-        ///
-        ///private bool checkIfDiagonalColumn(int i_SourceColumn, int i_DestinationColumn, bool i_IsDoubleMove)
-        ///{
-        ///    int distanceToCheck = i_IsDoubleMove ? 2 : 1;
-        ///    return ((i_SourceColumn - distanceToCheck == i_DestinationColumn) || (i_SourceColumn + distanceToCheck == i_DestinationColumn));
-        ///}
-        ///private eGameStatus InitiateComputerMove()
-        ///{
-        ///    
+        ///    return possibleMoves;
         ///}
     }
 }

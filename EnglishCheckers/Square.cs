@@ -4,8 +4,6 @@
     {
         private Coordinate m_Coordinate;
         private Coin m_Coin = null;
-
-        //hello
         public Coordinate Coordinate
         {
             get
