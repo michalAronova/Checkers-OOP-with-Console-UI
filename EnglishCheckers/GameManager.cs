@@ -15,6 +15,7 @@ namespace EnglishCheckers
         {
             Dictionary<Coordinate, Coin> player1Coins;
             Dictionary<Coordinate, Coin> player2Coins;
+
             m_Board = new Board(i_BoardSize);
             m_Board.GetCoordinateToCoinDictionaries(out player1Coins, out player2Coins);
             m_ActivePlayer = new Player(eDirection.Up, eCoinType.Player1Coin, player1Coins);
@@ -48,7 +49,6 @@ namespace EnglishCheckers
             
             initiatedMove = activePlayersValidMoves.Find(move => move.Source.Equals(i_SourceCoordinate) && move.Destination.Equals(i_DestinationCoordinate));
             isValidMove = initiatedMove != null;
-
             if(isValidMove) 
             {
                 performMove(initiatedMove);
@@ -80,11 +80,10 @@ namespace EnglishCheckers
             eGameStatus postMoveGameStatus;
             List<Move> activePlayersValidMoves;
             List<Move> nextPlayersValidMoves;
-            m_NextMoveIsDoubleJump = false;
 
+            m_NextMoveIsDoubleJump = false;
             swapPlayers(ref m_ActivePlayer, ref m_NextPlayer);
             nextPlayersValidMoves = calculateMovesForAllPlayersCoins(m_NextPlayer.PlayersCoins);
-
             if (nextPlayersValidMoves.Count == 0)
             {
                 activePlayersValidMoves = calculateMovesForAllPlayersCoins(m_ActivePlayer.PlayersCoins);
@@ -104,10 +103,12 @@ namespace EnglishCheckers
 
             return postMoveGameStatus;
         }
+
         private eGameStatus checkForDoubleJumpAndHandleTurnTransfer(Move i_InitiatedMove)
         {
             List<Move> activePlayersValidMoves;
             eGameStatus postMoveGameStatus;
+
             if (i_InitiatedMove.IsJumpMove)
             {
                 activePlayersValidMoves = calculateMovesFrom(i_InitiatedMove.Destination, m_Board.GetSquare(i_InitiatedMove.Destination).Coin);
@@ -126,8 +127,10 @@ namespace EnglishCheckers
             {
                 postMoveGameStatus = handleTurnTransfer();
             }
+
             return postMoveGameStatus;
         }
+
         private void swapPlayers(ref Player i_Player1, ref Player i_Player2)
         {
             Player tempPlayer = i_Player1;
@@ -178,7 +181,9 @@ namespace EnglishCheckers
         private List<Move> calculateJumpsOnlyFrom(Coordinate i_GivenDestination)
         {
             List<Move> JumpsFromCoordinate = calculateMovesFrom(i_GivenDestination, m_Board.GetSquare(i_GivenDestination).Coin);
+
             removeNoJumps(JumpsFromCoordinate);
+
             return JumpsFromCoordinate;
         }
         
@@ -186,6 +191,7 @@ namespace EnglishCheckers
         {
             List<Move> allPossibleMoves = new List<Move>();
             List<Move> movesFromGivenCoin;
+
             foreach (KeyValuePair<Coordinate, Coin> coinCoordinate in i_PlayersCoins)
             {
                 movesFromGivenCoin = calculateMovesFrom(coinCoordinate.Key, coinCoordinate.Value);
@@ -217,13 +223,13 @@ namespace EnglishCheckers
                     kingMoves = calculateMovesByDirection(i_CoinToMove, i_SourceCoordinate, eDirection.Down);
                 }
             }
-        
+
             moves = calculateMovesByDirection(i_CoinToMove, i_SourceCoordinate, coinsDirection);
-        
             if(kingMoves != null)
             {
                 kingMoves.ForEach(move => moves.Add(move));
             }
+
             return moves;
         }
         
@@ -234,6 +240,7 @@ namespace EnglishCheckers
             bool isLeftMove;
             List<Move> possibleMoves = new List<Move>();
             List<Coordinate> possibleJumps = null;
+
             foreach (Coordinate diagonalCoordinate in possibleDiagonalCoordinates)
             {
                 if(m_Board.GetSquare(diagonalCoordinate).Coin == null)
@@ -254,6 +261,7 @@ namespace EnglishCheckers
                     }
                 }
             }
+
             return possibleMoves;
         }
     }

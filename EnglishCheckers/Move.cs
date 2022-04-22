@@ -21,6 +21,7 @@ namespace EnglishCheckers
                 m_CoordinateOfJumpedOverCoin = i_JumpedOverCoordinate;
             }
         }
+
         public Coordinate Source
         {
             get
@@ -32,6 +33,7 @@ namespace EnglishCheckers
                 m_SourceCoordinate = value;
             }
         }
+
         public Coordinate Destination
         {
             get
@@ -43,6 +45,7 @@ namespace EnglishCheckers
                 m_DestinationCoordinate = value;
             }
         }
+
         public eDirection Direction
         {
             get
@@ -54,6 +57,7 @@ namespace EnglishCheckers
                 m_Direction = value;
             }
         }
+
         public bool IsJumpMove
         {
             get
@@ -65,6 +69,7 @@ namespace EnglishCheckers
                 m_IsJumpMove = value;
             }
         }
+
         public Coordinate CoordinateOfJumpedOverCoin
         {
             get

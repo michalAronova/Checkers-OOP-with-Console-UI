@@ -30,6 +30,7 @@ namespace EnglishCheckers
                 m_PlayersName = value;
             }
         }
+
         public bool IsHumanPlayer
         {
             get
@@ -41,6 +42,7 @@ namespace EnglishCheckers
                 m_IsHumanPlayer = value;
             }
         }
+
         public eCoinType CoinType
         {
             get
@@ -48,6 +50,19 @@ namespace EnglishCheckers
                 return r_PlayersCoinType;
             }
         }
+
+        public int Points
+        {
+            get
+            {
+                return m_PlayerPoints;
+            }
+            set
+            {
+                m_PlayerPoints = value;
+            }
+        }
+
         public eDirection Direction
         {
             get
@@ -55,6 +70,7 @@ namespace EnglishCheckers
                 return r_Direction;
             }
         }
+
         public Dictionary<Coordinate, Coin> PlayersCoins
         {
             get
@@ -62,6 +78,7 @@ namespace EnglishCheckers
                 return m_PlayersCoins;
             }
         }
+
         public void UpdatePlayersCoins(Coordinate i_SourceSquare, Coordinate i_DestinationSquare)
         {
             Coin movedCoin = m_PlayersCoins[i_SourceSquare];

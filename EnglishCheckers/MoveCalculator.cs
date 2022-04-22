@@ -19,6 +19,7 @@ namespace EnglishCheckers
         {
             List<Move> allPossibleMoves = new List<Move>();
             List<Move> movesFromGivenCoin;
+
             foreach (KeyValuePair<Coordinate, Coin> coinCoordinate in i_PlayersCoins)
             {
                 movesFromGivenCoin = calculateMovesFrom(coinCoordinate.Key, coinCoordinate.Value);
@@ -52,11 +53,11 @@ namespace EnglishCheckers
             }
 
             moves = calculateMovesByDirection(i_CoinToMove, i_SourceCoordinate, coinsDirection);
-
             if (kingMoves != null)
             {
                 kingMoves.ForEach(move => moves.Add(move));
             }
+
             return moves;
         }
 
@@ -67,6 +68,7 @@ namespace EnglishCheckers
             bool isLeftMove;
             List<Move> possibleMoves = new List<Move>();
             List<Coordinate> possibleJumps = null;
+
             foreach (Coordinate diagonalCoordinate in possibleDiagonalCoordinates)
             {
                 if (r_Board.GetSquare(diagonalCoordinate).Coin == null)
@@ -87,8 +89,10 @@ namespace EnglishCheckers
                     }
                 }
             }
+
             return possibleMoves;
         }
+
         internal void removeNoJumps(List<Move> i_Moves)
         {
             List<Move> movesToRemove = new List<Move>();
@@ -109,10 +113,13 @@ namespace EnglishCheckers
                 i_Moves.Remove(move);
             }
         }
+
         internal List<Move> calculateJumpsOnlyFrom(Coordinate i_GivenDestination)
         {
             List<Move> JumpsFromCoordinate = calculateMovesFrom(i_GivenDestination, r_Board.GetSquare(i_GivenDestination).Coin);
+
             removeNoJumps(JumpsFromCoordinate);
+
             return JumpsFromCoordinate;
         }
     }
