@@ -36,18 +36,18 @@ namespace EnglishCheckers
         {
             List<Move> moves = new List<Move>();
             List<Move> kingMoves = null;
-            Player.eDirection coinsDirection = (i_CoinToMove.Type == r_ActivePlayer.CoinType)
+            eDirection coinsDirection = (i_CoinToMove.Type == r_ActivePlayer.CoinType)
                                                    ? r_ActivePlayer.Direction
                                                    : r_NextPlayer.Direction;
             if (i_CoinToMove.IsKing)
             {
-                if (coinsDirection == Player.eDirection.Down)
+                if (coinsDirection == eDirection.Down)
                 {
-                    kingMoves = calculateMovesByDirection(i_CoinToMove, i_SourceCoordinate, Player.eDirection.Up);
+                    kingMoves = calculateMovesByDirection(i_CoinToMove, i_SourceCoordinate, eDirection.Up);
                 }
                 else
                 {
-                    kingMoves = calculateMovesByDirection(i_CoinToMove, i_SourceCoordinate, Player.eDirection.Down);
+                    kingMoves = calculateMovesByDirection(i_CoinToMove, i_SourceCoordinate, eDirection.Down);
                 }
             }
 
@@ -60,7 +60,7 @@ namespace EnglishCheckers
             return moves;
         }
 
-        internal List<Move> calculateMovesByDirection(Coin i_CoinToMove, Coordinate i_SourceCoordinate, Player.eDirection i_Direction)
+        internal List<Move> calculateMovesByDirection(Coin i_CoinToMove, Coordinate i_SourceCoordinate, eDirection i_Direction)
         {
             List<Coordinate> possibleDiagonalCoordinates = r_Board.GetDiagonalInDirection(i_SourceCoordinate, i_Direction);
             bool isAJumpMove = true;

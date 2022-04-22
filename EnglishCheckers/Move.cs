@@ -6,11 +6,11 @@ namespace EnglishCheckers
     {
         private Coordinate m_SourceCoordinate;
         private Coordinate m_DestinationCoordinate;
-        private Player.eDirection m_Direction;
+        private eDirection m_Direction;
         private bool m_IsJumpMove;
         private Coordinate? m_CoordinateOfJumpedOverCoin;
 
-        public Move(Coordinate i_SourceCoordinate, Coordinate i_DestinationCoordinate, Player.eDirection i_Direction, bool i_IsJumpMove, Coordinate? i_JumpedOverCoordinate)
+        public Move(Coordinate i_SourceCoordinate, Coordinate i_DestinationCoordinate, eDirection i_Direction, bool i_IsJumpMove, Coordinate? i_JumpedOverCoordinate)
         {
             m_SourceCoordinate = i_SourceCoordinate;
             m_DestinationCoordinate = i_DestinationCoordinate;
@@ -43,7 +43,7 @@ namespace EnglishCheckers
                 m_DestinationCoordinate = value;
             }
         }
-        public Player.eDirection Direction
+        public eDirection Direction
         {
             get
             {

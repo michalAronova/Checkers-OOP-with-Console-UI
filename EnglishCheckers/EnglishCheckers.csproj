@@ -34,6 +34,7 @@
   <ItemGroup>
     <Compile Include="Board.cs" />
     <Compile Include="Coin.cs" />
+    <Compile Include="eDirection.cs" />
     <Compile Include="eCoinType.cs" />
     <Compile Include="eGameStatus.cs" />
     <Compile Include="Coordinate.cs" />

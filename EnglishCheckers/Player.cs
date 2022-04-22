@@ -11,11 +11,7 @@ namespace EnglishCheckers
         private Dictionary<Coordinate, Coin> m_PlayersCoins;
         private int m_PlayerPoints = 0;
         private readonly eDirection r_Direction;
-        public enum eDirection
-        {
-            Up,
-            Down,
-        }
+
         public Player(eDirection i_Direction, eCoinType i_CoinType, Dictionary<Coordinate,Coin> i_PlayersCoins)
         {
             r_Direction = i_Direction;

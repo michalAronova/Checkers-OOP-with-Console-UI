@@ -17,8 +17,8 @@ namespace EnglishCheckers
             Dictionary<Coordinate, Coin> player2Coins;
             m_Board = new Board(i_BoardSize);
             m_Board.GetCoordinateToCoinDictionaries(out player1Coins, out player2Coins);
-            m_ActivePlayer = new Player(Player.eDirection.Up, eCoinType.Player1Coin, player1Coins);
-            m_NextPlayer = new Player(Player.eDirection.Down, eCoinType.Player2Coin, player2Coins);
+            m_ActivePlayer = new Player(eDirection.Up, eCoinType.Player1Coin, player1Coins);
+            m_NextPlayer = new Player(eDirection.Down, eCoinType.Player2Coin, player2Coins);
             m_NextPlayer.IsHumanPlayer = i_IsHumanPlayer;
         }
 
@@ -203,18 +203,18 @@ namespace EnglishCheckers
         {
             List<Move> moves = new List<Move>();
             List<Move> kingMoves = null;
-            Player.eDirection coinsDirection = (i_CoinToMove.Type == m_ActivePlayer.CoinType)
+            eDirection coinsDirection = (i_CoinToMove.Type == m_ActivePlayer.CoinType)
                                                    ? m_ActivePlayer.Direction
                                                    : m_NextPlayer.Direction;
             if(i_CoinToMove.IsKing)
             {
-                if(coinsDirection == Player.eDirection.Down)
+                if(coinsDirection == eDirection.Down)
                 {
-                    kingMoves = calculateMovesByDirection(i_CoinToMove, i_SourceCoordinate, Player.eDirection.Up);
+                    kingMoves = calculateMovesByDirection(i_CoinToMove, i_SourceCoordinate, eDirection.Up);
                 }
                 else
                 {
-                    kingMoves = calculateMovesByDirection(i_CoinToMove, i_SourceCoordinate, Player.eDirection.Down);
+                    kingMoves = calculateMovesByDirection(i_CoinToMove, i_SourceCoordinate, eDirection.Down);
                 }
             }
         
@@ -227,7 +227,7 @@ namespace EnglishCheckers
             return moves;
         }
         
-        private List<Move> calculateMovesByDirection(Coin i_CoinToMove, Coordinate i_SourceCoordinate, Player.eDirection i_Direction)
+        private List<Move> calculateMovesByDirection(Coin i_CoinToMove, Coordinate i_SourceCoordinate, eDirection i_Direction)
         {
             List<Coordinate> possibleDiagonalCoordinates = m_Board.GetDiagonalInDirection(i_SourceCoordinate, i_Direction);
             bool isAJumpMove = true;

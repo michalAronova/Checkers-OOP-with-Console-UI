@@ -104,10 +104,10 @@ namespace EnglishCheckers
             SetSquare(i_CoinCoordinate, null);
         }
 
-        public List<Coordinate> GetDiagonalInDirection(Coordinate i_Coordinate, Player.eDirection i_Direction)
+        public List<Coordinate> GetDiagonalInDirection(Coordinate i_Coordinate, eDirection i_Direction)
         {
             List<Coordinate> diagonalCoordinates = new List<Coordinate>();
-            int nextRow = (i_Direction == Player.eDirection.Down) ? i_Coordinate.Row + 1 : i_Coordinate.Row - 1;
+            int nextRow = (i_Direction == eDirection.Down) ? i_Coordinate.Row + 1 : i_Coordinate.Row - 1;
             if(nextRow >= 0 && nextRow < m_BoardSize)
             {
                 if (i_Coordinate.Column - 1 >= 0)
