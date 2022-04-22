@@ -40,6 +40,7 @@ namespace EnglishCheckers
             GameManager.eGameStatus eGameStatus = GameManager.eGameStatus.ContinueGame;
             StringBuilder previousMove = new StringBuilder();
             bool isPlayer1sTurn = !true;        //NO NEED, GETTER FROM GM
+            const bool v_ValidMove = true;
 
             while (eGameStatus == GameManager.eGameStatus.ContinueGame)
             {
@@ -50,6 +51,7 @@ namespace EnglishCheckers
                 eGameStatus = getAndInitiateMove(io_GameManager, previousMove, isPlayer1sTurn);
                 while (eGameStatus == GameManager.eGameStatus.InvalidMove)
                 {
+                    invalidInputMessage(!v_ValidMove);
                     eGameStatus = getAndInitiateMove(io_GameManager, previousMove, isPlayer1sTurn);
                 }
 
