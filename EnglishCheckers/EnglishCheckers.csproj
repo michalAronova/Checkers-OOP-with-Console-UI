@@ -32,7 +32,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="AIMoveGenerator.cs" />
     <Compile Include="Board.cs" />
     <Compile Include="Coin.cs" />
     <Compile Include="Coordinate.cs" />
