@@ -14,7 +14,6 @@ namespace EnglishCheckers
             m_GameBoard = new Square[m_BoardSize, m_BoardSize];
             setInitialBoard();
         }
-
         private void setInitialBoard()
         {
             int numberOfInitialPlayerRows = (m_BoardSize / 2 - 1);
@@ -23,11 +22,11 @@ namespace EnglishCheckers
             {
                 if(i < numberOfInitialPlayerRows)
                 {
-                    setupRow(i, Coin.eCoinType.Player1Coin);
+                    setupRow(i, Coin.eCoinType.Player2Coin);
                 }
                 else if(i >= m_BoardSize - numberOfInitialPlayerRows)
                 {
-                    setupRow(i, Coin.eCoinType.Player2Coin);
+                    setupRow(i, Coin.eCoinType.Player1Coin);
                 }
                 else
                 {
