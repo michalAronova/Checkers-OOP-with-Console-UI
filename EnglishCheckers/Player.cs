@@ -12,11 +12,12 @@ namespace EnglishCheckers
         private int m_PlayerPoints = 0;
         private readonly eDirection r_Direction;
 
-        public Player(eDirection i_Direction, eCoinType i_CoinType, Dictionary<Coordinate,Coin> i_PlayersCoins)
+        public Player(eDirection i_Direction, eCoinType i_CoinType, Dictionary<Coordinate,Coin> i_PlayersCoins, string i_PlayerName)
         {
             r_Direction = i_Direction;
             r_PlayersCoinType = i_CoinType;
             m_PlayersCoins = i_PlayersCoins;
+            m_PlayersName = i_PlayerName;
         }
 
         public string Name

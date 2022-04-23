@@ -11,15 +11,15 @@ namespace EnglishCheckers
         private Move m_LastMove;
         private bool m_NextMoveIsDoubleJump;
 
-        public GameManager(int i_BoardSize, bool i_IsHumanPlayer)
+        public GameManager(int i_BoardSize, bool i_IsHumanPlayer, string i_Player1Name, string i_Player2Name)
         {
             Dictionary<Coordinate, Coin> player1Coins;
             Dictionary<Coordinate, Coin> player2Coins;
 
             m_Board = new Board(i_BoardSize);
             m_Board.GetCoordinateToCoinDictionaries(out player1Coins, out player2Coins);
-            m_ActivePlayer = new Player(eDirection.Up, eCoinType.Player1Coin, player1Coins);
-            m_NextPlayer = new Player(eDirection.Down, eCoinType.Player2Coin, player2Coins);
+            m_ActivePlayer = new Player(eDirection.Up, eCoinType.Player1Coin, player1Coins, i_Player1Name);
+            m_NextPlayer = new Player(eDirection.Down, eCoinType.Player2Coin, player2Coins, i_Player2Name);
             m_NextPlayer.IsHumanPlayer = i_IsHumanPlayer;
         }
 
@@ -28,6 +28,22 @@ namespace EnglishCheckers
             get
             {
                 return m_Board;
+            }
+        }
+
+        public Player ActivePlayer
+        {
+            get
+            {
+                return m_ActivePlayer;
+            }
+        }
+
+        public Player NextPlayer
+        {
+            get
+            {
+                return m_NextPlayer;
             }
         }
 

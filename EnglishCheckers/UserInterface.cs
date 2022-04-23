@@ -4,9 +4,7 @@ using System.Text;
 namespace EnglishCheckers
 {
     public class UserInterface
-    {
-        private string m_Player1Name = null;                    //GETTER FROM GAMEMANAGER.PLAYER
-        private string m_Player2Name = null;                    //GETTER FROM GAMEMANAGER.PLAYER     
+    {   
         private bool m_twoPlayerMode = !true;                   //GETTER FROM GAMEMANAGER
         private const char r_Player1Coin = 'X';
         private const char r_Player2Coin = 'O';
@@ -18,13 +16,15 @@ namespace EnglishCheckers
             int boardSize;
             bool exitGame = !true;
             GameManager gameManager = null;
+            string player1Name = null;
+            string player2Name = null;
 
             Console.WriteLine("Welcome to English Checkers!");
-            m_Player1Name = getValidName();                                          //SETTER TO GAMEMANAGER.PLAYER    
+            player1Name = getValidName();  
             boardSize = getBoardSize();
             m_twoPlayerMode = getGameMode();
-            m_Player2Name = m_twoPlayerMode ? getValidName() : "Computer";           //SETTER TO GAMEMANAGER.PLAYER
-            gameManager = new GameManager(boardSize, m_twoPlayerMode);
+            player2Name = m_twoPlayerMode ? getValidName() : "Computer";
+            gameManager = new GameManager(boardSize, m_twoPlayerMode, player1Name, player2Name);
             while (!exitGame)
             {
                 runGame(gameManager);
@@ -46,7 +46,7 @@ namespace EnglishCheckers
             {
                 isPlayer1sTurn = !isPlayer1sTurn; //NO NEED, GETTER FROM GM
                 printBoard(io_GameManager.GameBoard);
-                printGameState(isPlayer1sTurn, previousMove, eGameStatus);
+                printGameState(io_GameManager.ActivePlayer, io_GameManager.NextPlayer, previousMove, eGameStatus);
                 previousMove.Clear();
                 eGameStatus = getAndInitiateMove(io_GameManager, previousMove, isPlayer1sTurn);
                 while (eGameStatus == eGameStatus.InvalidMove)
@@ -59,7 +59,7 @@ namespace EnglishCheckers
                 //clear screen
             }
 
-            printGameResult(eGameStatus);
+            printGameResult(eGameStatus, io_GameManager.ActivePlayer.Name, io_GameManager.NextPlayer.Name);
             //get and print points from game manager..
         }
 
@@ -81,12 +81,27 @@ namespace EnglishCheckers
             ///////////////////clear screen
         }
 
-        private void printGameState(bool i_IsPlayer1sTurn, StringBuilder i_PreviousMove, eGameStatus i_EGameStatus)
+        private void printGameState(Player i_ActivePlayer, Player i_NextPlayer, StringBuilder i_PreviousMove, eGameStatus i_EGameStatus)
         {
-            string currentPlayerName = i_IsPlayer1sTurn ? m_Player1Name : m_Player2Name;
-            string previousPlayerName = i_IsPlayer1sTurn ? m_Player2Name : m_Player1Name;
-            char currentPlayerCoin = i_IsPlayer1sTurn ? r_Player1Coin : r_Player2Coin;
-            char previousPlayerCoin = i_IsPlayer1sTurn ? r_Player2Coin : r_Player1Coin;
+            //string currentPlayerName = i_IsPlayer1sTurn ? m_Player1Name : m_Player2Name;
+            //string previousPlayerName = i_IsPlayer1sTurn ? m_Player2Name : m_Player1Name;
+            //char currentPlayerCoin = i_IsPlayer1sTurn ? r_Player1Coin : r_Player2Coin;
+            //char previousPlayerCoin = i_IsPlayer1sTurn ? r_Player2Coin : r_Player1Coin;
+            string currentPlayerName, previousPlayerName;
+            char currentPlayerCoin, previousPlayerCoin;
+
+            if(i_EGameStatus == eGameStatus.CurrentPlayerAnotherMove)
+            {
+                previousPlayerName = currentPlayerName = i_ActivePlayer.Name;
+                previousPlayerCoin = currentPlayerCoin = (i_ActivePlayer.CoinType == eCoinType.Player1Coin) ? r_Player1Coin : r_Player2Coin;
+            }
+            else
+            {
+                previousPlayerName = i_NextPlayer.Name;
+                currentPlayerName = i_ActivePlayer.Name;
+                previousPlayerCoin = (i_ActivePlayer.CoinType == eCoinType.Player1Coin) ? r_Player2Coin : r_Player1Coin;
+                currentPlayerCoin = (i_ActivePlayer.CoinType == eCoinType.Player1Coin) ? r_Player1Coin : r_Player2Coin;
+            }
 
             if (i_PreviousMove.Length != 0)
             {
@@ -160,17 +175,17 @@ namespace EnglishCheckers
             Console.WriteLine(lowerBound);
         }
 
-        private void printGameResult(eGameStatus i_EGameStatus)
+        private void printGameResult(eGameStatus i_EGameStatus, string i_ActivePlayerName, string i_NextPlayerName)
         {
             switch (i_EGameStatus)
             {
                 case eGameStatus.ActivePlayerWins:
-                    Console.WriteLine("{0} won!!", m_Player1Name);
+                    Console.WriteLine("{0} won!!", i_ActivePlayerName);
                     break;
                 case eGameStatus.NextPlayerWins:
                     if (m_twoPlayerMode)
                     {
-                        Console.WriteLine("{0} won!!", m_Player2Name);
+                        Console.WriteLine("{0} won!!", i_NextPlayerName);
                     }
                     else
                     {
