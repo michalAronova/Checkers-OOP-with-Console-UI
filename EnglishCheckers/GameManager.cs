@@ -161,16 +161,231 @@ namespace EnglishCheckers
             Move randomMove;
             eGameStatus postMoveGameStatus;
             List<Move> computerPossibleMoves;
+            //testing testing//
+            bool testingSmartMove = true;
+            if(testingSmartMove)
+            {
+                randomMove = selectGoodMove();
+            }
+            //testing testing//
+            else
+            {
+                computerPossibleMoves = calculateMovesForAllPlayersCoins(m_ActivePlayer.PlayersCoins);
+                randomMoveNumber = random.Next(computerPossibleMoves.Count) - 1;
+                randomMove = computerPossibleMoves[randomMoveNumber];
+            }
 
-            computerPossibleMoves = calculateMovesForAllPlayersCoins(m_ActivePlayer.PlayersCoins);
-            randomMoveNumber = random.Next(computerPossibleMoves.Count) - 1;
-            randomMove = computerPossibleMoves[randomMoveNumber];
             performMove(randomMove);
             postMoveGameStatus = checkForDoubleJumpAndHandleTurnTransfer(randomMove);
             o_SourceCoordinate = randomMove.Source;
             o_DestinationCoordinate = randomMove.Destination;
 
             return postMoveGameStatus;
+        }
+
+        private Move selectGoodMove()
+        {
+            List<Move> computerPossibleMoves;
+            List<Move> goodMoves = new List<Move>();
+            List<Move> badMoves = new List<Move>();
+            Move chosenMove;
+            Move makeKingMove = null;
+            computerPossibleMoves = calculateMovesForAllPlayersCoins(m_ActivePlayer.PlayersCoins);
+            
+            if(existsTurnToKingMoveIn(computerPossibleMoves, out makeKingMove))
+            {
+                chosenMove = makeKingMove;
+            }
+            else if(computerPossibleMoves.Exists(move => move.IsJumpMove))
+            {
+                chosenMove = checkForPossibleDoubleJump(computerPossibleMoves);
+                if(chosenMove == null)
+                {
+                    chosenMove = getRandomMove(computerPossibleMoves);
+                }
+            }
+            else
+            {
+                splitMoveListByPossibleOutcomes(computerPossibleMoves, badMoves, goodMoves);
+                if(goodMoves.Count == 0)
+                {
+                    chosenMove = getRandomMove(badMoves);
+                }
+                else
+                {
+                    chosenMove = choseMoveByPriority(goodMoves);
+                }
+            }
+            return chosenMove;
+        }
+
+        private Move choseMoveByPriority(List<Move> i_MovesToPrioritize) ///////////////move declarations up in this method
+        {
+            List<Move> kingMoves;
+            Move chosenMove;
+            Move randomGoodMove;
+            Move randomKingMove;
+            Random random = new Random();
+            int choice = random.Next(1);
+
+            prioritizeByDistance(i_MovesToPrioritize);
+            kingMoves = takeOutKingMoves(i_MovesToPrioritize);
+            int goodMoveUpRangeToChooseFrom = i_MovesToPrioritize.Count > 3 ? i_MovesToPrioritize.Count / 2 : i_MovesToPrioritize.Count;
+            int goodMoveDownRangeToChooseFrom = i_MovesToPrioritize.Count > 3 ? i_MovesToPrioritize.Count / 4 : 0;
+            randomGoodMove = getRandomMoveInRange(i_MovesToPrioritize, goodMoveDownRangeToChooseFrom, goodMoveUpRangeToChooseFrom);
+            chosenMove = randomGoodMove;
+            if(kingMoves.Count > 0)
+            {
+                randomKingMove = getRandomMove(kingMoves);
+                if(choice == 1)
+                {
+                    chosenMove = randomKingMove;
+                }
+            }
+            return chosenMove;
+        }
+        
+        private bool existsTurnToKingMoveIn(List<Move> i_PossibleMoves, out Move o_MakeKingMove)
+        {
+            bool existsTurnToKingMove = false;
+            List<Move> turnToKingMoves = new List<Move>();
+            Coin currentMovingCoin;
+            int currentDestinationRow;
+            foreach(Move possibleMove in i_PossibleMoves)
+            {
+                currentMovingCoin = m_Board.GetSquare(possibleMove.Source).Coin;
+                currentDestinationRow = possibleMove.Destination.Row;
+                if(currentDestinationRow == m_Board.Size - 1 && !currentMovingCoin.IsKing)
+                {
+                    turnToKingMoves.Add(possibleMove);
+                    existsTurnToKingMove = true;
+                }
+            }
+
+            if(existsTurnToKingMove)
+            {
+                o_MakeKingMove = getRandomMove(turnToKingMoves);
+            }
+            else
+            {
+                o_MakeKingMove = null;
+            }
+
+            return existsTurnToKingMove;
+        }
+
+        private Move checkForPossibleDoubleJump(List<Move> i_PossibleMoves)
+        {
+            List<Move> possibleDoubleJumpMoves = new List<Move>();
+            List<Move> possibleMovesFrom;
+            Move chosenDoubleJump;
+            foreach(Move possibleMove in i_PossibleMoves)
+            {
+                possibleMovesFrom = calculateMovesFrom(possibleMove.Destination, m_Board.GetSquare(possibleMove.Source).Coin);
+                if(possibleMovesFrom.Exists(move => move.IsJumpMove))
+                {
+                    possibleDoubleJumpMoves.Add(possibleMove);
+                }
+            }
+
+            if (possibleDoubleJumpMoves.Count>0)
+            {
+                chosenDoubleJump = getRandomMove(possibleDoubleJumpMoves);
+            }
+            else
+            {
+                chosenDoubleJump = null;
+            }
+
+            return chosenDoubleJump;
+        }
+
+        private void splitMoveListByPossibleOutcomes(List<Move> i_AllMoves, List<Move> o_BadMoves, List<Move> o_GoodMoves)
+        {
+            List<Move> opponentMovesAfterCurrentMove;
+            foreach(Move possibleMove in i_AllMoves)
+            {
+                if (!possibleMove.IsJumpMove)
+                {
+                    performMove(possibleMove);
+                    opponentMovesAfterCurrentMove = calculateMovesForAllPlayersCoins(m_NextPlayer.PlayersCoins);
+                    if(isBadMove(possibleMove, opponentMovesAfterCurrentMove))
+                    {
+                        o_BadMoves.Add(possibleMove);
+                    }
+                    else
+                    {
+                        o_GoodMoves.Add(possibleMove);
+                    }
+                    undoMove(possibleMove);
+                }
+            }
+        }
+
+        private bool isBadMove(Move i_TestedMoved, List<Move> i_OpponentsMoves)
+        {
+            bool isBadMove = false;
+            foreach(Move opponentMove in i_OpponentsMoves)
+            {
+                if(opponentMove.IsJumpMove)
+                {
+                    if(opponentMove.CoordinateOfJumpedOverCoin.Equals(i_TestedMoved.Destination))
+                    {
+                        isBadMove = true;
+                    }
+                }
+            }
+            ///if(i_OpponentsMoves.Exists(i_Move => i_Move.IsJumpMove))
+            ///{
+            ///    if(i_OpponentsMoves.Exists(i_Move => i_Move.CoordinateOfJumpedOverCoin.Equals(i_TestedMoved.Destination)))
+            ///    {
+            ///        isBadMove = true;
+            ///    }
+            ///}
+            return isBadMove;
+        }
+        private void prioritizeByDistance(List<Move> i_Moves)
+        {
+            i_Moves.Sort((i_MoveA, i_MoveB) => (i_MoveB.Destination.Row - i_MoveA.Destination.Row));
+        }
+
+        private List<Move> takeOutKingMoves(List<Move> i_Moves)
+        {
+            List<Move> kingMoves = new List<Move>();
+            for(int i = 0; i < i_Moves.Count; i++) 
+            {
+                if(m_Board.GetSquare(i_Moves[i].Source).Coin.IsKing)
+                {
+                    kingMoves.Add(i_Moves[i]);
+                    i_Moves.RemoveAt(i);
+                }
+            }
+            return kingMoves;
+        }
+        private void undoMove(Move i_MoveToUndo)
+        {
+            m_Board.MoveCoin(i_MoveToUndo.Destination, i_MoveToUndo.Source);
+            m_ActivePlayer.UpdatePlayersCoins(i_MoveToUndo.Destination, i_MoveToUndo.Source);
+        }
+        private int getRandomInRange(int i_Bottom, int i_Upper)
+        {
+            Random random = new Random();
+            return random.Next((i_Upper - i_Bottom)) + i_Bottom;
+        }
+
+        private Move getRandomMove(List<Move> i_Moves)
+        {
+            return getRandomMoveInRange(i_Moves, 0, i_Moves.Count - 1);
+        }
+        private Move getRandomMoveInRange(List<Move> i_Moves, int i_Bottom, int i_Upper)
+        {
+            int randomIndex = getRandomInRange(i_Bottom, i_Upper);
+            if(randomIndex == i_Moves.Count)
+            {
+                randomIndex -= 1;
+            }
+
+            return i_Moves[randomIndex];
         }
 
         private void removeNoJumps(List<Move> i_Moves)
@@ -211,13 +426,12 @@ namespace EnglishCheckers
             foreach (KeyValuePair<Coordinate, Coin> coinCoordinate in i_PlayersCoins)
             {
                 movesFromGivenCoin = calculateMovesFrom(coinCoordinate.Key, coinCoordinate.Value);
-                removeNoJumps(allPossibleMoves);    
                 if(movesFromGivenCoin.Count != 0)
                 {
                     movesFromGivenCoin.ForEach(move => allPossibleMoves.Add(move));
                 }
             }
-        
+            removeNoJumps(allPossibleMoves);    
             return allPossibleMoves;
         }
         

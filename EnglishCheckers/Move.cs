@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace EnglishCheckers
+﻿namespace EnglishCheckers
 {
     public class Move
     {
