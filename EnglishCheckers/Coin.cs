@@ -6,7 +6,7 @@ namespace EnglishCheckers
     public class Coin
     {
         private eCoinType m_CoinType;
-        private bool m_IsKing = false;
+        private bool m_IsKing = !true;
 
         public Coin(eCoinType i_CoinType)
         {
