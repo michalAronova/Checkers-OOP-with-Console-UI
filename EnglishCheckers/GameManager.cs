@@ -518,13 +518,17 @@ namespace EnglishCheckers
 
         private void countAndSetPoints(eGameStatus i_EGameStatus)
         {
+            int pointsToAdd = 0;
+
             if (i_EGameStatus == eGameStatus.ActivePlayerWins)
             {
-                ActivePlayer.Points += ActivePlayer.GetCurrentGamePoints() - NextPlayer.GetCurrentGamePoints();
+                pointsToAdd = ActivePlayer.GetCurrentGamePoints() - NextPlayer.GetCurrentGamePoints();
+                ActivePlayer.Points += (pointsToAdd > 0) ? pointsToAdd : 1;
             }
             else if(i_EGameStatus == eGameStatus.NextPlayerWins)
             {
-                NextPlayer.Points += NextPlayer.GetCurrentGamePoints() - ActivePlayer.GetCurrentGamePoints();
+                pointsToAdd = NextPlayer.GetCurrentGamePoints() - ActivePlayer.GetCurrentGamePoints();
+                NextPlayer.Points += (pointsToAdd > 0) ? pointsToAdd : 1;
             }
         }
 
