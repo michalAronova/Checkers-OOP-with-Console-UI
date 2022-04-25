@@ -288,7 +288,6 @@ Score:
                 invalidInputMessage(isValidMove);
             }
 
-            Ex02.ConsoleUtils.Screen.Clear();
             return didPlayerQuit;
         }
 
