@@ -170,29 +170,13 @@ namespace EnglishCheckers
 
         public eGameStatus InitiateComputerMove(out Coordinate o_SourceCoordinate, out Coordinate o_DestinationCoordinate)
         {
-            Random random = new Random();
-            int randomMoveNumber;
-            Move randomMove;
             eGameStatus postMoveGameStatus;
-            List<Move> computerPossibleMoves;
-            //testing testing//
-            bool testingSmartMove = true;
-            if(testingSmartMove)
-            {
-                randomMove = selectGoodMove();
-            }
-            //testing testing//
-            else
-            {
-                computerPossibleMoves = calculateMovesForAllPlayersCoins(m_ActivePlayer.PlayersCoins);
-                randomMoveNumber = random.Next(computerPossibleMoves.Count) - 1;
-                randomMove = computerPossibleMoves[randomMoveNumber];
-            }
+            Move smartMove = selectGoodMove();
 
-            performMove(randomMove);
-            postMoveGameStatus = checkForDoubleJumpAndHandleTurnTransfer(randomMove);
-            o_SourceCoordinate = randomMove.Source;
-            o_DestinationCoordinate = randomMove.Destination;
+            performMove(smartMove);
+            postMoveGameStatus = checkForDoubleJumpAndHandleTurnTransfer(smartMove);
+            o_SourceCoordinate = smartMove.Source;
+            o_DestinationCoordinate = smartMove.Destination;
             System.Threading.Thread.Sleep(3000);
 
             return postMoveGameStatus;
@@ -359,13 +343,7 @@ namespace EnglishCheckers
                     }
                 }
             }
-            ///if(i_OpponentsMoves.Exists(i_Move => i_Move.IsJumpMove))
-            ///{
-            ///    if(i_OpponentsMoves.Exists(i_Move => i_Move.CoordinateOfJumpedOverCoin.Equals(i_TestedMoved.Destination)))
-            ///    {
-            ///        isBadMove = true;
-            ///    }
-            ///}
+
             return isBadMove;
         }
         private void prioritizeByDistance(List<Move> i_Moves)
@@ -490,7 +468,7 @@ namespace EnglishCheckers
             moves = calculateMovesByDirection(i_CoinToMove, i_SourceCoordinate, coinsDirection);
             if(kingMoves != null)
             {
-                kingMoves.ForEach(move => moves.Add(move));
+                kingMoves.ForEach(kingMove => moves.Add(kingMove));
             }
 
             return moves;
