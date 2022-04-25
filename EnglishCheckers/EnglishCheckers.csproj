@@ -39,7 +39,6 @@
     <Compile Include="eGameStatus.cs" />
     <Compile Include="Coordinate.cs" />
     <Compile Include="Move.cs" />
-    <Compile Include="MoveCalculator.cs" />
     <Compile Include="Square.cs" />
     <Compile Include="GameManager.cs" />
     <Compile Include="Player.cs" />
@@ -48,7 +47,7 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Ex02.ConsoleUtils">
-      <HintPath>..\..\..\..\..\Temp\Ex02.ConsoleUtils.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\Temp\Ex02.ConsoleUtils.dll</HintPath>
     </Reference>
     <Reference Include="System" />
   </ItemGroup>
