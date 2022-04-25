@@ -4,8 +4,9 @@
     {
         public static void Main()
         {
-            UserInterface UI = new UserInterface();
-            UI.InitializeGame();
+            UserInterface user = new UserInterface();
+
+            user.StartGame();
         }
     }
 }

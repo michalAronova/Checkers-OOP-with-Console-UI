@@ -12,10 +12,10 @@ namespace EnglishCheckers
         {
             m_BoardSize = i_BoardSize;
             m_GameBoard = new Square[m_BoardSize, m_BoardSize];
-            setInitialBoard();
+            SetInitialBoard();
         }
 
-        private void setInitialBoard()
+        public void SetInitialBoard()
         {
             int numberOfInitialPlayerRows = (m_BoardSize / 2 - 1);
 

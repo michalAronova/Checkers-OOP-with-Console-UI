@@ -7,6 +7,6 @@
         NextPlayerWins,
         InvalidMove,
         Tie,
-        CurrentPlayerAnotherMove,
+        ActivePlayerHasAnotherMove,
     }
 }

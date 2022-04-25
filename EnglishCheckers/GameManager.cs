@@ -10,16 +10,18 @@ namespace EnglishCheckers
         private Player m_NextPlayer;
         private Move m_LastMove;
         private bool m_NextMoveIsDoubleJump;
+        private readonly bool r_twoPlayersMode;
 
         public GameManager(int i_BoardSize, bool i_IsHumanPlayer, string i_Player1Name, string i_Player2Name)
         {
-            Dictionary<Coordinate, Coin> player1Coins;
-            Dictionary<Coordinate, Coin> player2Coins;
+            Dictionary<Coordinate, Coin> player1Coins = null;
+            Dictionary<Coordinate, Coin> player2Coins = null;
 
             m_Board = new Board(i_BoardSize);
             m_Board.GetCoordinateToCoinDictionaries(out player1Coins, out player2Coins);
             m_ActivePlayer = new Player(eDirection.Up, eCoinType.Player1Coin, player1Coins, i_Player1Name);
             m_NextPlayer = new Player(eDirection.Down, eCoinType.Player2Coin, player2Coins, i_Player2Name);
+            r_twoPlayersMode = i_IsHumanPlayer;
             m_NextPlayer.IsHumanPlayer = i_IsHumanPlayer;
         }
 
@@ -47,6 +49,14 @@ namespace EnglishCheckers
             }
         }
 
+        public bool TwoPlayersMode
+        {
+            get
+            {
+                return r_twoPlayersMode;
+            }
+        }
+
         public eGameStatus InitiateMove(Coordinate i_SourceCoordinate, Coordinate i_DestinationCoordinate)
         {
             List<Move> activePlayersValidMoves;
@@ -68,8 +78,6 @@ namespace EnglishCheckers
             if(isValidMove) 
             {
                 performMove(initiatedMove);
-                //somewhere here (maybe inside perform move? maybe inside the methods inside it - in player maybe?)
-                //need to check if reached end - if yes make it a king!
                 postMoveGameStatus = checkForDoubleJumpAndHandleTurnTransfer(initiatedMove);
             }
             else
@@ -80,10 +88,12 @@ namespace EnglishCheckers
             return postMoveGameStatus;
         }
 
+
+
         private void performMove(Move i_InitiatedMove)
         {
             m_Board.MoveCoin(i_InitiatedMove.Source, i_InitiatedMove.Destination);
-            m_ActivePlayer.UpdatePlayersCoins(i_InitiatedMove.Source, i_InitiatedMove.Destination);
+            m_ActivePlayer.UpdatePlayersCoins(i_InitiatedMove.Source, i_InitiatedMove.Destination, m_Board.Size);
             if(i_InitiatedMove.IsJumpMove)
             {
                 m_Board.RemoveCoin(i_InitiatedMove.CoordinateOfJumpedOverCoin);
@@ -97,7 +107,7 @@ namespace EnglishCheckers
             List<Move> activePlayersValidMoves;
             List<Move> nextPlayersValidMoves;
 
-            m_NextMoveIsDoubleJump = false;
+            m_NextMoveIsDoubleJump = !true;
             swapPlayers(ref m_ActivePlayer, ref m_NextPlayer);
             nextPlayersValidMoves = calculateMovesForAllPlayersCoins(m_NextPlayer.PlayersCoins);
             if (nextPlayersValidMoves.Count == 0)
@@ -111,6 +121,9 @@ namespace EnglishCheckers
                 {
                     postMoveGameStatus = eGameStatus.ActivePlayerWins;
                 }
+
+                countAndSetPoints(postMoveGameStatus);
+                initiateGame();
             }
             else
             {
@@ -132,7 +145,7 @@ namespace EnglishCheckers
                 {
                     m_NextMoveIsDoubleJump = true;
                     m_LastMove = i_InitiatedMove;
-                    postMoveGameStatus = eGameStatus.ContinueGame;
+                    postMoveGameStatus = eGameStatus.ActivePlayerHasAnotherMove;
                 }
                 else
                 {
@@ -150,6 +163,7 @@ namespace EnglishCheckers
         private void swapPlayers(ref Player i_Player1, ref Player i_Player2)
         {
             Player tempPlayer = i_Player1;
+
             i_Player1 = i_Player2;
             i_Player2 = tempPlayer;
         }
@@ -179,6 +193,7 @@ namespace EnglishCheckers
             postMoveGameStatus = checkForDoubleJumpAndHandleTurnTransfer(randomMove);
             o_SourceCoordinate = randomMove.Source;
             o_DestinationCoordinate = randomMove.Destination;
+            System.Threading.Thread.Sleep(3000);
 
             return postMoveGameStatus;
         }
@@ -190,8 +205,8 @@ namespace EnglishCheckers
             List<Move> badMoves = new List<Move>();
             Move chosenMove;
             Move makeKingMove = null;
+
             computerPossibleMoves = calculateMovesForAllPlayersCoins(m_ActivePlayer.PlayersCoins);
-            
             if(existsTurnToKingMoveIn(computerPossibleMoves, out makeKingMove))
             {
                 chosenMove = makeKingMove;
@@ -216,10 +231,11 @@ namespace EnglishCheckers
                     chosenMove = choseMoveByPriority(goodMoves);
                 }
             }
+
             return chosenMove;
         }
 
-        private Move choseMoveByPriority(List<Move> i_MovesToPrioritize) ///////////////move declarations up in this method
+        private Move choseMoveByPriority(List<Move> i_MovesToPrioritize)
         {
             List<Move> kingMoves;
             Move chosenMove;
@@ -227,11 +243,13 @@ namespace EnglishCheckers
             Move randomKingMove;
             Random random = new Random();
             int choice = random.Next(1);
+            int goodMoveUpRangeToChooseFrom;
+            int goodMoveDownRangeToChooseFrom;
 
             prioritizeByDistance(i_MovesToPrioritize);
             kingMoves = takeOutKingMoves(i_MovesToPrioritize);
-            int goodMoveUpRangeToChooseFrom = i_MovesToPrioritize.Count > 3 ? i_MovesToPrioritize.Count / 2 : i_MovesToPrioritize.Count;
-            int goodMoveDownRangeToChooseFrom = i_MovesToPrioritize.Count > 3 ? i_MovesToPrioritize.Count / 4 : 0;
+            goodMoveUpRangeToChooseFrom = i_MovesToPrioritize.Count > 3 ? i_MovesToPrioritize.Count / 2 : i_MovesToPrioritize.Count;
+            goodMoveDownRangeToChooseFrom = i_MovesToPrioritize.Count > 3 ? i_MovesToPrioritize.Count / 4 : 0;
             randomGoodMove = getRandomMoveInRange(i_MovesToPrioritize, goodMoveDownRangeToChooseFrom, goodMoveUpRangeToChooseFrom);
             chosenMove = randomGoodMove;
             if(kingMoves.Count > 0)
@@ -242,6 +260,7 @@ namespace EnglishCheckers
                     chosenMove = randomKingMove;
                 }
             }
+
             return chosenMove;
         }
         
@@ -251,6 +270,7 @@ namespace EnglishCheckers
             List<Move> turnToKingMoves = new List<Move>();
             Coin currentMovingCoin;
             int currentDestinationRow;
+
             foreach(Move possibleMove in i_PossibleMoves)
             {
                 currentMovingCoin = m_Board.GetSquare(possibleMove.Source).Coin;
@@ -279,6 +299,7 @@ namespace EnglishCheckers
             List<Move> possibleDoubleJumpMoves = new List<Move>();
             List<Move> possibleMovesFrom;
             Move chosenDoubleJump;
+
             foreach(Move possibleMove in i_PossibleMoves)
             {
                 possibleMovesFrom = calculateMovesFrom(possibleMove.Destination, m_Board.GetSquare(possibleMove.Source).Coin);
@@ -303,6 +324,7 @@ namespace EnglishCheckers
         private void splitMoveListByPossibleOutcomes(List<Move> i_AllMoves, List<Move> o_BadMoves, List<Move> o_GoodMoves)
         {
             List<Move> opponentMovesAfterCurrentMove;
+
             foreach(Move possibleMove in i_AllMoves)
             {
                 if (!possibleMove.IsJumpMove)
@@ -317,6 +339,7 @@ namespace EnglishCheckers
                     {
                         o_GoodMoves.Add(possibleMove);
                     }
+
                     undoMove(possibleMove);
                 }
             }
@@ -324,7 +347,8 @@ namespace EnglishCheckers
 
         private bool isBadMove(Move i_TestedMoved, List<Move> i_OpponentsMoves)
         {
-            bool isBadMove = false;
+            bool isBadMove = !true;
+
             foreach(Move opponentMove in i_OpponentsMoves)
             {
                 if(opponentMove.IsJumpMove)
@@ -352,6 +376,7 @@ namespace EnglishCheckers
         private List<Move> takeOutKingMoves(List<Move> i_Moves)
         {
             List<Move> kingMoves = new List<Move>();
+
             for(int i = 0; i < i_Moves.Count; i++) 
             {
                 if(m_Board.GetSquare(i_Moves[i].Source).Coin.IsKing)
@@ -360,16 +385,20 @@ namespace EnglishCheckers
                     i_Moves.RemoveAt(i);
                 }
             }
+
             return kingMoves;
         }
+
         private void undoMove(Move i_MoveToUndo)
         {
             m_Board.MoveCoin(i_MoveToUndo.Destination, i_MoveToUndo.Source);
-            m_ActivePlayer.UpdatePlayersCoins(i_MoveToUndo.Destination, i_MoveToUndo.Source);
+            m_ActivePlayer.UpdatePlayersCoins(i_MoveToUndo.Destination, i_MoveToUndo.Source, m_Board.Size);
         }
+
         private int getRandomInRange(int i_Bottom, int i_Upper)
         {
             Random random = new Random();
+
             return random.Next((i_Upper - i_Bottom)) + i_Bottom;
         }
 
@@ -377,9 +406,11 @@ namespace EnglishCheckers
         {
             return getRandomMoveInRange(i_Moves, 0, i_Moves.Count - 1);
         }
+
         private Move getRandomMoveInRange(List<Move> i_Moves, int i_Bottom, int i_Upper)
         {
             int randomIndex = getRandomInRange(i_Bottom, i_Upper);
+
             if(randomIndex == i_Moves.Count)
             {
                 randomIndex -= 1;
@@ -431,7 +462,9 @@ namespace EnglishCheckers
                     movesFromGivenCoin.ForEach(move => allPossibleMoves.Add(move));
                 }
             }
-            removeNoJumps(allPossibleMoves);    
+
+            removeNoJumps(allPossibleMoves);
+
             return allPossibleMoves;
         }
         
@@ -493,6 +526,49 @@ namespace EnglishCheckers
             }
 
             return possibleMoves;
+        }
+
+        public eGameStatus CurrentPlayerQuit()
+        {
+            eGameStatus gameStatus = eGameStatus.NextPlayerWins;
+
+            countAndSetPoints(gameStatus);
+            initiateGame();
+
+            return gameStatus;
+        }
+
+        private void countAndSetPoints(eGameStatus i_EGameStatus)
+        {
+            if (i_EGameStatus == eGameStatus.ActivePlayerWins)
+            {
+                ActivePlayer.Points += ActivePlayer.GetCurrentGamePoints() - NextPlayer.GetCurrentGamePoints();
+            }
+            else if(i_EGameStatus == eGameStatus.NextPlayerWins)
+            {
+                NextPlayer.Points += NextPlayer.GetCurrentGamePoints() - ActivePlayer.GetCurrentGamePoints();
+            }
+        }
+
+        private void initiateGame()
+        {
+            m_Board.SetInitialBoard();
+            initiatePlayers();
+        }
+
+        private void initiatePlayers()
+        {
+            Dictionary<Coordinate, Coin> player1Coins = null;
+            Dictionary<Coordinate, Coin> player2Coins = null;
+
+            if (ActivePlayer.CoinType == eCoinType.Player2Coin)
+            {
+                swapPlayers(ref m_ActivePlayer, ref m_NextPlayer);
+            }
+
+            m_Board.GetCoordinateToCoinDictionaries(out player1Coins, out player2Coins);
+            ActivePlayer.PlayersCoins = player1Coins;
+            NextPlayer.PlayersCoins = player2Coins;
         }
     }
 }

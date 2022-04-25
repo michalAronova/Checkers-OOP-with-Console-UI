@@ -5,16 +5,16 @@ namespace EnglishCheckers
 {
     public class UserInterface
     {   
-        private bool m_twoPlayerMode = !true;                   //GETTER FROM GAMEMANAGER
         private const char r_Player1Coin = 'X';
         private const char r_Player2Coin = 'O';
         private const char r_Player1King = 'K';
         private const char r_Player2King = 'U';
 
-        public void InitializeGame()
+        public void StartGame()
         {
             int boardSize;
             bool exitGame = !true;
+            bool twoPlayerMode = !true;
             GameManager gameManager = null;
             string player1Name = null;
             string player2Name = null;
@@ -22,13 +22,12 @@ namespace EnglishCheckers
             Console.WriteLine("Welcome to English Checkers!");
             player1Name = getValidName();  
             boardSize = getBoardSize();
-            m_twoPlayerMode = getGameMode();
-            player2Name = m_twoPlayerMode ? getValidName() : "Computer";
-            gameManager = new GameManager(boardSize, m_twoPlayerMode, player1Name, player2Name);
+            twoPlayerMode = getGameMode();
+            player2Name = twoPlayerMode ? getValidName() : "Computer";
+            gameManager = new GameManager(boardSize, twoPlayerMode, player1Name, player2Name);
             while (!exitGame)
             {
                 runGame(gameManager);
-                //initilize game from gamemanager
                 exitGame = shouldExitGame();
             }
 
@@ -39,28 +38,24 @@ namespace EnglishCheckers
         {
             eGameStatus eGameStatus = eGameStatus.ContinueGame;
             StringBuilder previousMove = new StringBuilder();
-            bool isPlayer1sTurn = !true;        //NO NEED, GETTER FROM GM
             const bool v_ValidMove = true;
 
-            while (eGameStatus == eGameStatus.ContinueGame)
+            while (eGameStatus == eGameStatus.ContinueGame || eGameStatus == eGameStatus.ActivePlayerHasAnotherMove)
             {
-                isPlayer1sTurn = !isPlayer1sTurn; //NO NEED, GETTER FROM GM
+                Ex02.ConsoleUtils.Screen.Clear();
                 printBoard(io_GameManager.GameBoard);
                 printGameState(io_GameManager.ActivePlayer, io_GameManager.NextPlayer, previousMove, eGameStatus);
                 previousMove.Clear();
-                eGameStatus = getAndInitiateMove(io_GameManager, previousMove, isPlayer1sTurn);
+                eGameStatus = getAndInitiateMove(io_GameManager, previousMove);
                 while (eGameStatus == eGameStatus.InvalidMove)
                 {
                     invalidInputMessage(!v_ValidMove);
-                    eGameStatus = getAndInitiateMove(io_GameManager, previousMove, isPlayer1sTurn);
+                    eGameStatus = getAndInitiateMove(io_GameManager, previousMove);
                 }
-
-                //sleep 3 secs?? maybe in the start of the block
-                //clear screen
             }
 
             printGameResult(eGameStatus, io_GameManager.ActivePlayer.Name, io_GameManager.NextPlayer.Name);
-            //get and print points from game manager..
+            printPoints(io_GameManager.ActivePlayer, io_GameManager.NextPlayer);
         }
 
         private void printBoard(Board i_GameBoard)
@@ -77,20 +72,14 @@ namespace EnglishCheckers
                 printLowerBound(i_GameBoard.Size);
                 row++;
             }
-
-            ///////////////////clear screen
         }
 
         private void printGameState(Player i_ActivePlayer, Player i_NextPlayer, StringBuilder i_PreviousMove, eGameStatus i_EGameStatus)
         {
-            //string currentPlayerName = i_IsPlayer1sTurn ? m_Player1Name : m_Player2Name;
-            //string previousPlayerName = i_IsPlayer1sTurn ? m_Player2Name : m_Player1Name;
-            //char currentPlayerCoin = i_IsPlayer1sTurn ? r_Player1Coin : r_Player2Coin;
-            //char previousPlayerCoin = i_IsPlayer1sTurn ? r_Player2Coin : r_Player1Coin;
             string currentPlayerName, previousPlayerName;
             char currentPlayerCoin, previousPlayerCoin;
 
-            if(i_EGameStatus == eGameStatus.CurrentPlayerAnotherMove)
+            if(i_EGameStatus == eGameStatus.ActivePlayerHasAnotherMove)
             {
                 previousPlayerName = currentPlayerName = i_ActivePlayer.Name;
                 previousPlayerCoin = currentPlayerCoin = (i_ActivePlayer.CoinType == eCoinType.Player1Coin) ? r_Player1Coin : r_Player2Coin;
@@ -105,10 +94,10 @@ namespace EnglishCheckers
 
             if (i_PreviousMove.Length != 0)
             {
-                Console.WriteLine(string.Format("{0}'s move was ({1}): {2}", previousPlayerName, previousPlayerCoin, i_PreviousMove));
+                Console.WriteLine("{0}'s move was ({1}): {2}", previousPlayerName, previousPlayerCoin, i_PreviousMove);
             }
 
-            Console.WriteLine(string.Format("{0}'s turn ({1}):", currentPlayerName, currentPlayerCoin));
+            Console.WriteLine("{0}'s turn ({1}):", currentPlayerName, currentPlayerCoin);
         }
 
         private string createRowToString(Board i_GameBoard, int i_Row)
@@ -177,35 +166,34 @@ namespace EnglishCheckers
 
         private void printGameResult(eGameStatus i_EGameStatus, string i_ActivePlayerName, string i_NextPlayerName)
         {
-            switch (i_EGameStatus)
+            string winnersName = null;
+
+            if (i_EGameStatus == eGameStatus.Tie)
             {
-                case eGameStatus.ActivePlayerWins:
-                    Console.WriteLine("{0} won!!", i_ActivePlayerName);
-                    break;
-                case eGameStatus.NextPlayerWins:
-                    if (m_twoPlayerMode)
-                    {
-                        Console.WriteLine("{0} won!!", i_NextPlayerName);
-                    }
-                    else
-                    {
-                        Console.WriteLine("The computer won!!");
-                    }
-                    break;
-                case eGameStatus.Tie:
-                    Console.WriteLine("It's a tie!");
-                    break;
+                Console.WriteLine("It's a tie!");
+            }
+            else
+            {
+                winnersName = (i_EGameStatus == eGameStatus.ActivePlayerWins) ? i_ActivePlayerName : i_NextPlayerName;
+                Console.WriteLine("{0} won!!", winnersName);
             }
         }
 
-        private eGameStatus getAndInitiateMove(GameManager io_GameManager, StringBuilder o_MoveString, bool i_IsPlayer1sTurn)
+        private void printPoints(Player i_ActivePlayer, Player i_NextPlayer)
+        {
+            Console.WriteLine(@"
+Score:
+{0}: {2}        {1}: {3}", i_ActivePlayer.Name, i_NextPlayer.Name, i_ActivePlayer.Points, i_NextPlayer.Points);
+        }
+
+        private eGameStatus getAndInitiateMove(GameManager io_GameManager, StringBuilder o_MoveString)
         {
             eGameStatus gameStatus = 0;
             Coordinate sourceCoordinate = new Coordinate();
             Coordinate destinationCoordinate = new Coordinate();
             bool didCurrentPlayerQuit = !true;
 
-            if (!m_twoPlayerMode && !i_IsPlayer1sTurn)
+            if (!io_GameManager.TwoPlayersMode && (io_GameManager.ActivePlayer.CoinType == eCoinType.Player2Coin))
             {
                 gameStatus = io_GameManager.InitiateComputerMove(out sourceCoordinate, out destinationCoordinate);
                 convertCoordinatesToMoveString(o_MoveString, sourceCoordinate, destinationCoordinate);
@@ -215,7 +203,7 @@ namespace EnglishCheckers
                 didCurrentPlayerQuit = getValidMoveAndReturIfQuit(o_MoveString, io_GameManager.GameBoard.Size);
                 if (didCurrentPlayerQuit)
                 {
-                    //gameStatus =  gameManager.player quit..
+                    gameStatus = io_GameManager.CurrentPlayerQuit();
                 }
                 else
                 {
@@ -248,7 +236,7 @@ namespace EnglishCheckers
                 invalidInputMessage(isValidName);
             }
 
-            ///////////////////////////////clear screen
+            Ex02.ConsoleUtils.Screen.Clear();
 
             return name;
         }
@@ -300,7 +288,7 @@ namespace EnglishCheckers
                 invalidInputMessage(isValidMove);
             }
 
-            ///////////////////////////////clear screen
+            Ex02.ConsoleUtils.Screen.Clear();
             return didPlayerQuit;
         }
 
@@ -309,16 +297,16 @@ namespace EnglishCheckers
             int boardSize = 0;
             bool validInput = !true;
 
-            System.Console.WriteLine(string.Format(
+            System.Console.WriteLine(
 @"Please choose board size:
-(6) 6X6     (8) 8X8     (10) 10X10"));
+(6) 6X6     (8) 8X8     (10) 10X10");
             while (!validInput)
             {
                 validInput = int.TryParse(Console.ReadLine(), out boardSize) && (boardSize == 6 || boardSize == 8 || boardSize == 10);
                 invalidInputMessage(validInput);
             }
 
-            //clear screen
+            Ex02.ConsoleUtils.Screen.Clear();
 
             return boardSize;
         }
@@ -329,9 +317,9 @@ namespace EnglishCheckers
             bool validInput = !true;
             int gameMode = 1;
 
-            System.Console.WriteLine(string.Format(
+            System.Console.WriteLine(
 @"Please choose game mode:
-(1) 1 player     (2) 2 players"));
+(1) 1 player     (2) 2 players");
             while (!validInput)
             {
                 validInput = int.TryParse(Console.ReadLine(), out gameMode) && (gameMode == 1 || gameMode == 2);
@@ -339,7 +327,7 @@ namespace EnglishCheckers
             }
 
             isTwoPlayerMode = (gameMode == 2);
-            //clear screen
+            Ex02.ConsoleUtils.Screen.Clear();
 
             return isTwoPlayerMode;
         }

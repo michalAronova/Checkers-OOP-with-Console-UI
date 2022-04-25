@@ -78,18 +78,45 @@ namespace EnglishCheckers
             {
                 return m_PlayersCoins;
             }
+            set
+            {
+                m_PlayersCoins = value;
+            }
         }
 
-        public void UpdatePlayersCoins(Coordinate i_SourceSquare, Coordinate i_DestinationSquare)
+        public void UpdatePlayersCoins(Coordinate i_SourceCoordinate, Coordinate i_DestinationCoordinate, int i_BoardSize)
         {
-            Coin movedCoin = m_PlayersCoins[i_SourceSquare];
-            m_PlayersCoins.Remove(i_SourceSquare);
-            m_PlayersCoins.Add(i_DestinationSquare, movedCoin);
+            Coin movedCoin = m_PlayersCoins[i_SourceCoordinate];
+
+            m_PlayersCoins.Remove(i_SourceCoordinate);
+            if (!movedCoin.IsKing)
+            {
+                if ((movedCoin.Type == eCoinType.Player1Coin && i_DestinationCoordinate.Row == 0) ||
+                    (movedCoin.Type == eCoinType.Player2Coin && i_DestinationCoordinate.Row == i_BoardSize - 1))
+                {
+                    movedCoin.IsKing = true;
+                }
+            }
+
+            m_PlayersCoins.Add(i_DestinationCoordinate, movedCoin);
         }
 
         public void RemovePlayersAteCoin(Coordinate i_CoinCoordinate)
         {
             m_PlayersCoins.Remove(i_CoinCoordinate);
+        }
+
+        public int GetCurrentGamePoints()
+        {
+            int pointsCount = 0, pointsToAdd = 0;
+
+            foreach (KeyValuePair<Coordinate, Coin> coinCoordinate in m_PlayersCoins)
+            {
+                pointsToAdd = (coinCoordinate.Value.IsKing) ? 4 : 1;
+                pointsCount += pointsToAdd;
+            }
+
+            return pointsCount;
         }
     }
 }
