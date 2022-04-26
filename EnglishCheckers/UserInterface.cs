@@ -28,6 +28,7 @@ namespace EnglishCheckers
             while (!exitGame)
             {
                 runGame(gameManager);
+                gameManager.InitiateGame();
                 exitGame = shouldExitGame();
             }
 
@@ -42,7 +43,6 @@ namespace EnglishCheckers
 
             while (eGameStatus == eGameStatus.ContinueGame || eGameStatus == eGameStatus.ActivePlayerHasAnotherMove)
             {
-                Ex02.ConsoleUtils.Screen.Clear();
                 printBoard(io_GameManager.GameBoard);
                 printGameState(io_GameManager.ActivePlayer, io_GameManager.NextPlayer, previousMove, eGameStatus);
                 previousMove.Clear();
@@ -54,6 +54,7 @@ namespace EnglishCheckers
                 }
             }
 
+            printBoard(io_GameManager.GameBoard);
             printGameResult(eGameStatus, io_GameManager.ActivePlayer.Name, io_GameManager.NextPlayer.Name);
             printPoints(io_GameManager.ActivePlayer, io_GameManager.NextPlayer);
         }
@@ -63,6 +64,7 @@ namespace EnglishCheckers
             char row = 'a';
             string correspondingStringToRow;
 
+            Ex02.ConsoleUtils.Screen.Clear();
             printColumnLine(i_GameBoard.Size);
             printLowerBound(i_GameBoard.Size);
             for (int i = 0; i < i_GameBoard.Size; i++)

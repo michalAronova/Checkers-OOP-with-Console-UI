@@ -109,21 +109,20 @@ namespace EnglishCheckers
 
             m_NextMoveIsDoubleJump = !true;
             swapPlayers(ref m_ActivePlayer, ref m_NextPlayer);
-            nextPlayersValidMoves = calculateMovesForAllPlayersCoins(m_NextPlayer.PlayersCoins);
-            if (nextPlayersValidMoves.Count == 0)
+            activePlayersValidMoves = calculateMovesForAllPlayersCoins(m_ActivePlayer.PlayersCoins);
+            if (activePlayersValidMoves.Count == 0)
             {
-                activePlayersValidMoves = calculateMovesForAllPlayersCoins(m_ActivePlayer.PlayersCoins);
-                if (activePlayersValidMoves.Count == 0)
+                nextPlayersValidMoves = calculateMovesForAllPlayersCoins(m_NextPlayer.PlayersCoins);
+                if (nextPlayersValidMoves.Count == 0)
                 {
                     postMoveGameStatus = eGameStatus.Tie;
                 }
                 else
                 {
-                    postMoveGameStatus = eGameStatus.ActivePlayerWins;
+                    postMoveGameStatus = eGameStatus.NextPlayerWins;
                 }
 
                 countAndSetPoints(postMoveGameStatus);
-                initiateGame();
             }
             else
             {
@@ -511,7 +510,6 @@ namespace EnglishCheckers
             eGameStatus gameStatus = eGameStatus.NextPlayerWins;
 
             countAndSetPoints(gameStatus);
-            initiateGame();
 
             return gameStatus;
         }
@@ -532,7 +530,7 @@ namespace EnglishCheckers
             }
         }
 
-        private void initiateGame()
+        public void InitiateGame()
         {
             m_Board.SetInitialBoard();
             initiatePlayers();
