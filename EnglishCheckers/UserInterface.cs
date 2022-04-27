@@ -202,7 +202,7 @@ Score:
             }
             else
             {
-                didCurrentPlayerQuit = getValidMoveAndReturIfQuit(o_MoveString, io_GameManager.GameBoard.Size);
+                didCurrentPlayerQuit = getValidMoveAndReturnIfQuit(o_MoveString, io_GameManager.GameBoard.Size);
                 if (didCurrentPlayerQuit)
                 {
                     gameStatus = io_GameManager.CurrentPlayerQuit();
@@ -243,7 +243,7 @@ Score:
             return name;
         }
 
-        private bool getValidMoveAndReturIfQuit(StringBuilder o_MoveString, int i_BoardSize)
+        private bool getValidMoveAndReturnIfQuit(StringBuilder o_MoveString, int i_BoardSize)
         {
             bool isValidMove = !true;
             bool didPlayerQuit = !true;
